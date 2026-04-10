@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import { lessons } from "../data/lessons";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "An interactive guide to the FIPS mesh protocol" } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <title>{title} | Learn FIPS</title>
+  </head>
+  <body class="flex flex-col min-h-dvh">
+    <nav class="border-b border-fips-border bg-fips-surface/80 backdrop-blur-sm sticky top-0 z-50">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-fips-accent font-bold tracking-tight">
+          <span class="text-xl">⬡</span>
+          <span>Learn FIPS</span>
+        </a>
+        <div class="hidden md:flex items-center gap-1 text-sm">
+          {lessons.map((l) => {
+            const href = `/lessons/${l.slug}`;
+            const active = currentPath.startsWith(href);
+            return (
+              <a
+                href={href}
+                class:list={[
+                  "px-2 py-1 rounded transition-colors",
+                  active ? "text-fips-accent bg-fips-accent/10" : "text-fips-muted hover:text-fips-text",
+                ]}
+              >
+                {l.number}
+              </a>
+            );
+          })}
+        </div>
+        <a
+          href="https://github.com/jmcorgan/fips"
+          target="_blank"
+          rel="noopener"
+          class="text-fips-muted hover:text-fips-text text-sm transition-colors"
+        >
+          GitHub
+        </a>
+      </div>
+    </nav>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="border-t border-fips-border py-8 text-center text-fips-muted text-sm">
+      <p>
+        Built to teach <a href="https://fips.network" target="_blank" rel="noopener" class="text-fips-accent hover:underline">FIPS</a>.
+        Protocol specs at <a href="https://github.com/jmcorgan/fips/tree/master/docs/design" target="_blank" rel="noopener" class="text-fips-accent hover:underline">docs/design</a>.
+      </p>
+    </footer>
+  </body>
+</html>

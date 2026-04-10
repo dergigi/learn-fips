@@ -1,0 +1,44 @@
+---
+import Base from "../layouts/Base.astro";
+import { lessons } from "../data/lessons";
+---
+
+<Base title="Learn FIPS">
+  <section class="hex-bg">
+    <div class="max-w-3xl mx-auto px-4 pt-24 pb-16 text-center">
+      <p class="text-fips-accent font-mono text-sm tracking-widest uppercase mb-4">Interactive Protocol Guide</p>
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+        Learn <span class="text-fips-accent">FIPS</span>
+      </h1>
+      <p class="text-fips-muted text-lg max-w-xl mx-auto mb-8">
+        FIPS is a self-organizing encrypted mesh that works over anything you can send packets through.
+        This site teaches you how it works, layer by layer, with interactive simulations.
+      </p>
+      <a
+        href={`/lessons/${lessons[0].slug}`}
+        class="inline-block bg-fips-accent text-fips-bg font-semibold px-6 py-3 rounded-lg hover:bg-fips-accent/90 transition-colors"
+      >
+        Start Learning
+      </a>
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-4 py-16">
+    <div class="grid gap-4">
+      {lessons.map((lesson) => (
+        <a
+          href={`/lessons/${lesson.slug}`}
+          class="group flex items-start gap-4 p-4 rounded-lg border border-fips-border bg-fips-surface/50 hover:border-fips-accent/40 transition-colors"
+        >
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-sm font-bold">
+            {lesson.number}
+          </span>
+          <div>
+            <h2 class="font-semibold group-hover:text-fips-accent transition-colors">{lesson.title}</h2>
+            <p class="text-fips-muted text-sm mt-1">{lesson.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>
