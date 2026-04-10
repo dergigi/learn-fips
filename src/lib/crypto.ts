@@ -1,5 +1,5 @@
 import { getPublicKey, utils } from "@noble/secp256k1";
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2.js";
 
 export interface FipsIdentity {
   privateKey: Uint8Array;
@@ -10,7 +10,7 @@ export interface FipsIdentity {
 }
 
 export function generateKeypair(): { privateKey: Uint8Array; publicKey: Uint8Array } {
-  const privateKey = utils.randomPrivateKey();
+  const privateKey = utils.randomSecretKey();
   const publicKey = getPublicKey(privateKey, true); // compressed, 33 bytes
   return { privateKey, publicKey };
 }

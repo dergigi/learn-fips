@@ -1,13 +1,115 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import IdentityGenerator from "../../components/IdentityGenerator";
+import Quiz from "../../components/Quiz";
+import { quizzes } from "../../data/quizzes";
 ---
 
 <Base title="Identity">
   <article class="max-w-3xl mx-auto px-4 py-12">
     <p class="text-fips-accent font-mono text-sm mb-2">Lesson 2</p>
     <h1 class="text-3xl font-bold mb-8">Identity</h1>
-    <p class="text-fips-muted">Content coming soon.</p>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Most networks separate identity from addressing. You get an IP address from a DHCP server, and separately prove who you are through certificates issued by a third party. FIPS collapses these into a single step: your cryptographic keypair <em>is</em> your address.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The keypair</h2>
+
+      <p>
+        A FIPS node starts by generating (or loading) a secp256k1 keypair. This is the same elliptic curve used by Bitcoin and Nostr. The private key stays on your node. The public key, encoded in bech32 as an <code class="mono text-fips-accent">npub</code>, is how other users and applications identify you.
+      </p>
+
+      <p>
+        From this single public key, FIPS derives two more identifiers. Both are deterministic. No coordination with anyone else is needed.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The derivation pipeline</h2>
+
+      <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 font-mono text-sm space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="text-fips-muted w-32">Public Key</span>
+          <span class="text-fips-text">(33 bytes, compressed secp256k1)</span>
+        </div>
+        <div class="text-fips-accent pl-4">↓ bech32 encode x-only key</div>
+        <div class="flex items-center gap-2">
+          <span class="text-fips-muted w-32">npub</span>
+          <span class="text-fips-text">Application identity. What you share with others.</span>
+        </div>
+        <div class="text-fips-accent pl-4">↓ SHA-256, truncate to 16 bytes</div>
+        <div class="flex items-center gap-2">
+          <span class="text-fips-muted w-32">node_addr</span>
+          <span class="text-fips-text">Routing identifier. Appears in packet headers.</span>
+        </div>
+        <div class="text-fips-accent pl-4">↓ prepend 0xfd to first 15 bytes</div>
+        <div class="flex items-center gap-2">
+          <span class="text-fips-muted w-32">IPv6 address</span>
+          <span class="text-fips-text">fd00::/8 ULA for legacy IPv6 apps.</span>
+        </div>
+      </div>
+
+      <p>
+        The node_addr is a one-way hash. Given a node_addr, you cannot recover the public key. This is the property that protects identity at the routing layer: intermediate routers see node_addrs in packet headers but cannot determine which npub (which person) the traffic belongs to. An observer who already knows your npub can check whether a particular node_addr is yours, but they cannot enumerate identities from traffic alone.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Try it yourself</h2>
+
+      <p>
+        The widget below generates a real secp256k1 keypair in your browser and walks through the derivation. Each step produces a different representation of the same identity.
+      </p>
+
+      <IdentityGenerator client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Who sees what?</h2>
+
+      <p>
+        Different actors in the network have access to different levels of identity information. This table summarizes what each can observe:
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-fips-border text-left">
+              <th class="py-2 pr-4 text-fips-muted font-medium">Observer</th>
+              <th class="py-2 pr-4 text-fips-muted font-medium">Sees</th>
+            </tr>
+          </thead>
+          <tbody class="text-fips-text">
+            <tr class="border-b border-fips-border/50">
+              <td class="py-2 pr-4 font-medium">Transport observer</td>
+              <td class="py-2 text-fips-muted">Encrypted packets, timing, packet sizes. No FIPS-level identifiers.</td>
+            </tr>
+            <tr class="border-b border-fips-border/50">
+              <td class="py-2 pr-4 font-medium">Direct peer</td>
+              <td class="py-2 text-fips-muted">Your npub (from Noise IK handshake), traffic volume, timing.</td>
+            </tr>
+            <tr class="border-b border-fips-border/50">
+              <td class="py-2 pr-4 font-medium">Intermediate router</td>
+              <td class="py-2 text-fips-muted">Source and destination node_addrs, packet size. Cannot read payload.</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-medium">Destination</td>
+              <td class="py-2 text-fips-muted">Your npub (from Noise XK session), payload content.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Why Nostr keys?</h2>
+
+      <p>
+        FIPS could have defined its own key format. Instead, it reuses the Nostr cryptographic stack: secp256k1 for keys, Schnorr signatures for authentication, SHA-256 for hashing, ChaCha20-Poly1305 for AEAD. This means an existing Nostr identity can serve as a FIPS node identity without generating anything new.
+      </p>
+
+      <p>
+        Key rotation is straightforward but destructive: a new keypair produces a new node_addr and IPv6 address. All existing sessions must be re-established. There is no mechanism (yet) for announcing a successor key.
+      </p>
+    </section>
+
+    <Quiz client:visible questions={quizzes["2-identity"]} title="Identity Quiz" />
+
     <LessonNav current={2} />
   </article>
 </Base>

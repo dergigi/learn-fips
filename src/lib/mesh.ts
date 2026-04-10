@@ -1,5 +1,5 @@
 import type { MeshNode, Link, NodeAddr } from "./types";
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2.js";
 
 /** Compare two NodeAddrs lexicographically. Returns <0, 0, or >0. */
 export function compareNodeAddr(a: NodeAddr, b: NodeAddr): number {
