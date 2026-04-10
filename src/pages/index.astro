@@ -24,21 +24,46 @@ import { lessons } from "../data/lessons";
   </section>
 
   <section class="max-w-3xl mx-auto px-4 py-16">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold">Lessons</h2>
+      <span id="progress-text" class="text-fips-muted text-sm font-mono"></span>
+    </div>
     <div class="grid gap-4">
       {lessons.map((lesson) => (
         <a
           href={`/lessons/${lesson.slug}`}
-          class="group flex items-start gap-4 p-4 rounded-lg border border-fips-border bg-fips-surface/50 hover:border-fips-accent/40 transition-colors"
+          data-lesson={lesson.number}
+          class="lesson-card group flex items-start gap-4 p-4 rounded-lg border border-fips-border bg-fips-surface/50 hover:border-fips-accent/40 transition-colors"
         >
-          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-sm font-bold">
+          <span class="lesson-badge flex-shrink-0 w-8 h-8 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-sm font-bold">
             {lesson.number}
           </span>
-          <div>
-            <h2 class="font-semibold group-hover:text-fips-accent transition-colors">{lesson.title}</h2>
+          <div class="flex-1">
+            <h3 class="font-semibold group-hover:text-fips-accent transition-colors">{lesson.title}</h3>
             <p class="text-fips-muted text-sm mt-1">{lesson.description}</p>
           </div>
         </a>
       ))}
     </div>
   </section>
+
+  <script>
+    const visited: number[] = JSON.parse(localStorage.getItem("fips-visited") || "[]");
+    const total = 7;
+    const progressText = document.getElementById("progress-text");
+    if (progressText) {
+      progressText.textContent = `${visited.length}/${total} visited`;
+    }
+    document.querySelectorAll<HTMLElement>(".lesson-card").forEach((card) => {
+      const num = parseInt(card.dataset.lesson || "0", 10);
+      if (visited.includes(num)) {
+        const badge = card.querySelector(".lesson-badge");
+        if (badge) {
+          badge.classList.remove("bg-fips-accent/10", "text-fips-accent");
+          badge.classList.add("bg-fips-green/20", "text-fips-green");
+          badge.textContent = "✓";
+        }
+      }
+    });
+  </script>
 </Base>
