@@ -1,13 +1,100 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import MeshSimulator from "../../components/MeshSimulator";
+import BloomFilterViz from "../../components/BloomFilterViz";
+import RoutingDemo from "../../components/RoutingDemo";
+import Quiz from "../../components/Quiz";
+import { quizzes } from "../../data/quizzes";
 ---
 
 <Base title="Spanning Tree & Routing">
   <article class="max-w-3xl mx-auto px-4 py-12">
     <p class="text-fips-accent font-mono text-sm mb-2">Lesson 5</p>
     <h1 class="text-3xl font-bold mb-8">Spanning Tree & Routing</h1>
-    <p class="text-fips-muted">Content coming soon.</p>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Routing in FIPS has no central routing table. Each node makes local forwarding decisions using three data structures: a spanning tree, a set of bloom filters, and a coordinate system derived from the tree. Together, these let any node forward a packet toward any other node, using only information it already has from its direct peers.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Building the spanning tree</h2>
+
+      <p>
+        Every FIPS mesh has a root. The root is the node with the lexicographically smallest <code class="mono text-fips-accent">node_addr</code>. No election protocol is needed. Each node picks the smallest address it has heard about, and because the sorting is deterministic, all nodes converge on the same root.
+      </p>
+
+      <p>
+        Each node selects one of its peers as a parent. The parent is the peer that offers the best path to the root, weighted by link cost (measured via MMP: round-trip time, loss rate, jitter). The resulting parent-child relationships form a spanning tree over the mesh.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Coordinates</h2>
+
+      <p>
+        A node's tree coordinate is the sequence of <code class="mono text-fips-accent">node_addr</code> values from itself to the root: <code class="mono text-fips-accent">[self, parent, ..., root]</code>. Because the tree is rooted and parents are unique, this coordinate uniquely identifies a node's position in the tree.
+      </p>
+
+      <p>
+        Tree distance between two nodes is the total hops from each to their lowest common ancestor. This is computed by finding the longest common suffix of their coordinate arrays.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Simulator</h2>
+
+      <p>
+        Drag nodes to reposition them. Click a node to inspect it. Use "Route From" to select a source, then click a destination to visualize the greedy routing path. "Kill Link" severs a random mesh link and the tree reconverges.
+      </p>
+
+      <MeshSimulator client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Bloom filters for reachability</h2>
+
+      <p>
+        Each node maintains a bloom filter that summarizes the set of <code class="mono text-fips-accent">node_addr</code> values reachable through it. When a node receives a packet for an unknown destination, it queries each peer's bloom filter. A "no" answer means the destination is definitely unreachable through that peer. A "yes" means the destination might be reachable (bloom filters have false positives, but never false negatives).
+      </p>
+
+      <p>
+        Bloom filters use split-horizon: a node does not include addresses learned from a peer in the filter it sends back to that peer. This prevents routing loops.
+      </p>
+
+      <p>
+        The widget below lets you insert node names (which get hashed into <code class="mono text-fips-accent">node_addr</code> values), then query the filter. Try inserting a few names and querying for names you did not insert to see false positives at work.
+      </p>
+
+      <BloomFilterViz client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The routing priority chain</h2>
+
+      <p>
+        When a node needs to forward a packet, it runs through <code class="mono text-fips-accent">find_next_hop()</code>, which follows this priority chain:
+      </p>
+
+      <ol class="list-decimal list-inside space-y-1 text-sm">
+        <li><strong>Local delivery.</strong> Is the destination me? Deliver locally.</li>
+        <li><strong>Direct peer.</strong> Is the destination a direct peer? Forward to it.</li>
+        <li><strong>Bloom filter candidate.</strong> Does any peer's bloom filter claim reachability? Forward to the closest such peer by tree distance.</li>
+        <li><strong>Greedy tree routing.</strong> Forward to the peer that minimizes tree distance to the destination's coordinates.</li>
+        <li><strong>Backtrack.</strong> Forward to the parent (toward the root), hoping a higher-up node has better information.</li>
+      </ol>
+
+      <p>
+        The step-through below implements a simplified version (without bloom filter lookup) on a five-node mesh. Pick a source and destination, then step through the decision process.
+      </p>
+
+      <RoutingDemo client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">What happens when the network splits</h2>
+
+      <p>
+        If a partition separates the mesh into two (or more) disconnected segments, each segment independently reconverges. The segment without the original root elects a new root (the smallest <code class="mono text-fips-accent">node_addr</code> in the segment). When segments rejoin, the globally smallest root wins, and the tree re-stabilizes.
+      </p>
+
+      <p>
+        This reconvergence happens through normal gossip. Nodes periodically exchange their root and depth information with peers. When the numbers disagree, they re-evaluate their parent choices. The process converges in O(diameter) rounds, proportional to the depth of the tree.
+      </p>
+    </section>
+
+    <Quiz client:visible questions={quizzes["5-spanning-tree"]} title="Routing Quiz" />
+
     <LessonNav current={5} />
   </article>
 </Base>
