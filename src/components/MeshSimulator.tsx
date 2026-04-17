@@ -203,8 +203,8 @@ export default function MeshSimulator() {
         ctx.lineWidth = 2;
         ctx.setLineDash([]);
       } else {
-        ctx.strokeStyle = "#1e2a3a";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(52, 211, 153, 0.55)";
+        ctx.lineWidth = 1.25;
         ctx.setLineDash([4, 4]);
       }
       ctx.stroke();
@@ -549,8 +549,8 @@ export default function MeshSimulator() {
           <span className="w-4 h-0.5 bg-fips-accent inline-block" /> tree edge
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-4 h-0.5 bg-fips-border inline-block border-t border-dashed border-fips-muted" />{" "}
-          mesh edge
+          <span className="w-4 h-0 inline-block border-t border-dashed border-fips-green/70" /> mesh
+          edge
         </span>
         <span className="flex items-center gap-1">
           <span className="w-4 h-0.5 bg-fips-highlight inline-block" /> route
