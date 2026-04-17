@@ -3,26 +3,35 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { generateFullIdentity, hexEncode, type FipsIdentity } from "../lib/crypto";
 
 const steps = [
-  { key: "privateKey", label: "Private Key (nsec)", who: "Only you. Never leaves your node." },
+  {
+    key: "privateKey",
+    label: "Private Key (nsec)",
+    who: "Only you. Never leaves your node.",
+    from: null,
+  },
   {
     key: "publicKey",
     label: "Public Key (compressed)",
     who: "Shared during Noise handshakes with direct peers.",
+    from: "secp256k1 point multiplication of the private key",
   },
   {
     key: "npub",
     label: "npub (bech32)",
     who: "Application-layer identity. How other users address you.",
+    from: "bech32 encoding of the x-only public key",
   },
   {
     key: "nodeAddr",
     label: "node_addr (SHA-256, 16 bytes)",
     who: "Routing identifier. What transit routers see in packet headers.",
+    from: "SHA-256 of the x-only public key, truncated to 16 bytes (not of the npub)",
   },
   {
     key: "ipv6",
     label: "IPv6 Address (fd00::/8)",
     who: "For legacy apps. Lets unmodified IPv6 software use the mesh.",
+    from: "0xfd prepended to the first 15 bytes of node_addr",
   },
 ] as const;
 
@@ -125,10 +134,10 @@ export default function IdentityGenerator() {
                   transition={{ duration: 0.3 }}
                   className="rounded border border-fips-border p-3"
                 >
-                  {i > 0 && (
+                  {step.from && (
                     <div className="flex justify-center -mt-[1.1rem] mb-2">
                       <span className="text-fips-accent text-xs bg-fips-surface rounded-sm px-2 leading-none py-0.5">
-                        ↓ derived from above
+                        ↓ {step.from}
                       </span>
                     </div>
                   )}
