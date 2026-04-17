@@ -149,12 +149,18 @@ export default function RoutingDemo() {
         </label>
       </div>
 
-      <div className="space-y-2 mb-4">
+      <ol
+        className="space-y-2 mb-4 list-none"
+        aria-label={`Routing decision steps for ${source} to ${dest}`}
+      >
         {steps.map((step, i) => {
           const visible = i <= stepIndex;
+          const current = i === stepIndex;
           return (
-            <div
+            <li
               key={i}
+              aria-current={current ? "step" : undefined}
+              aria-hidden={!visible}
               className={`rounded border p-3 transition-all ${
                 visible
                   ? step.fired
@@ -176,13 +182,14 @@ export default function RoutingDemo() {
                   {step.result && <p className="text-fips-text mt-1">{step.result}</p>}
                 </div>
               )}
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
 
-      <div className="flex gap-2 text-xs">
+      <div className="flex gap-2 text-xs" role="group" aria-label="Step navigation">
         <button
+          type="button"
           onClick={() => setStepIndex(Math.max(0, stepIndex - 1))}
           disabled={stepIndex === 0}
           className="px-3 py-1 rounded border border-fips-border text-fips-muted disabled:opacity-30"
@@ -190,6 +197,7 @@ export default function RoutingDemo() {
           ← Back
         </button>
         <button
+          type="button"
           onClick={() => setStepIndex(Math.min(steps.length - 1, stepIndex + 1))}
           disabled={stepIndex >= steps.length - 1}
           className="px-3 py-1 rounded border border-fips-border text-fips-accent disabled:opacity-30"
@@ -197,11 +205,22 @@ export default function RoutingDemo() {
           Next →
         </button>
         <button
+          type="button"
           onClick={() => setStepIndex(steps.length - 1)}
           className="px-3 py-1 rounded border border-fips-border text-fips-muted"
         >
           Show All
         </button>
+        <span className="ml-2 text-fips-muted font-mono self-center">
+          Step {stepIndex + 1} of {steps.length}
+        </span>
+      </div>
+
+      <div aria-live="polite" className="sr-only">
+        {steps[stepIndex] &&
+          `Step ${stepIndex + 1} of ${steps.length}: ${steps[stepIndex]!.label}. ${
+            steps[stepIndex]!.detail
+          } ${steps[stepIndex]!.result ?? ""}`}
       </div>
 
       <div className="mt-4 text-xs text-fips-muted">

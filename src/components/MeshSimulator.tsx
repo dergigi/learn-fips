@@ -17,6 +17,21 @@ function shortAddr(addr: Uint8Array): string {
   return hexEncode(addr).slice(0, 6);
 }
 
+const NUDGE_STEP = 20;
+
+function computeRoute(from: string, to: string, nodes: Map<string, MeshNode>): string[] {
+  const path: string[] = [from];
+  let current = from;
+  for (let hop = 0; hop < 20; hop++) {
+    const next = findNextHop(current, to, nodes);
+    if (!next || next === current) break;
+    path.push(next);
+    if (next === to) break;
+    current = next;
+  }
+  return path;
+}
+
 export default function MeshSimulator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [nodes, setNodes] = useState<Map<string, MeshNode>>(() =>
@@ -25,9 +40,11 @@ export default function MeshSimulator() {
   const [links, setLinks] = useState<Link[]>(() => createDemoLinks(nodes));
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [routeFrom, setRouteFrom] = useState<string | null>(null);
+  const [routeTo, setRouteTo] = useState<string | null>(null);
   const [routePath, setRoutePath] = useState<string[]>([]);
   const [dragging, setDragging] = useState<string | null>(null);
   const [showCoords, setShowCoords] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string>("");
 
   const rebuild = useCallback((n: Map<string, MeshNode>, l: Link[]) => {
     const copy = new Map(
@@ -165,19 +182,16 @@ export default function MeshSimulator() {
       const dy = node.y - y;
       if (dx * dx + dy * dy < NODE_RADIUS * NODE_RADIUS) {
         if (routeFrom) {
-          const path: string[] = [routeFrom];
-          let current = routeFrom;
-          for (let hop = 0; hop < 20; hop++) {
-            const next = findNextHop(current, node.id, nodes);
-            if (!next || next === current) break;
-            path.push(next);
-            if (next === node.id) break;
-            current = next;
-          }
+          const path = computeRoute(routeFrom, node.id, nodes);
+          setRouteTo(node.id);
           setRoutePath(path);
           setRouteFrom(null);
+          setStatusMsg(
+            `Route ${routeFrom} to ${node.id}: ${path.join(" → ")} (${path.length - 1} hops).`
+          );
         } else {
           setSelectedNode(node.id);
+          setStatusMsg(`Selected node ${node.id}. Use arrow keys to move it.`);
           setDragging(node.id);
           e.currentTarget.setPointerCapture(e.pointerId);
         }
@@ -237,10 +251,65 @@ export default function MeshSimulator() {
     setLinks(l);
     setSelectedNode(null);
     setRouteFrom(null);
+    setRouteTo(null);
     setRoutePath([]);
+    setStatusMsg("Mesh reset.");
+  }
+
+  function nudgeSelected(dx: number, dy: number) {
+    if (!selectedNode) return;
+    setNodes((prev) => {
+      const copy = new Map(prev);
+      const n = copy.get(selectedNode);
+      if (!n) return prev;
+      const x = Math.max(NODE_RADIUS, Math.min(WIDTH - NODE_RADIUS, n.x + dx));
+      const y = Math.max(NODE_RADIUS, Math.min(HEIGHT - NODE_RADIUS, n.y + dy));
+      copy.set(selectedNode, { ...n, x, y });
+      return copy;
+    });
+  }
+
+  function handleCanvasKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>) {
+    if (!selectedNode) return;
+    const step = e.shiftKey ? NUDGE_STEP * 2 : NUDGE_STEP;
+    switch (e.key) {
+      case "ArrowUp":
+        e.preventDefault();
+        nudgeSelected(0, -step);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        nudgeSelected(0, step);
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        nudgeSelected(-step, 0);
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        nudgeSelected(step, 0);
+        break;
+      case "Escape":
+        setSelectedNode(null);
+        setStatusMsg("Selection cleared.");
+        break;
+      default:
+    }
+  }
+
+  function showRouteFromForm() {
+    if (!routeFrom || !routeTo) return;
+    const path = computeRoute(routeFrom, routeTo, nodes);
+    setRoutePath(path);
+    setStatusMsg(
+      path.length > 1
+        ? `Route ${routeFrom} to ${routeTo}: ${path.join(" → ")} (${path.length - 1} hops).`
+        : `No route found from ${routeFrom} to ${routeTo}.`
+    );
   }
 
   const selectedInfo = selectedNode ? nodes.get(selectedNode) : null;
+  const sortedIds = Array.from(nodes.keys()).sort();
 
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
@@ -248,28 +317,21 @@ export default function MeshSimulator() {
         <h3 className="text-lg font-semibold">Mesh Simulator</h3>
         <div className="flex gap-2 text-xs">
           <button
+            type="button"
             onClick={() => setShowCoords(!showCoords)}
             className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
           >
             {showCoords ? "Hide" : "Show"} Coords
           </button>
           <button
-            onClick={() => {
-              setRouteFrom(selectedNode);
-              setRoutePath([]);
-            }}
-            disabled={!selectedNode}
-            className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors disabled:opacity-30"
-          >
-            Route From {selectedNode || "..."}
-          </button>
-          <button
+            type="button"
             onClick={killRandomLink}
             className="px-2 py-1 rounded border border-fips-border hover:border-fips-red/40 text-fips-red transition-colors"
           >
             Kill Link
           </button>
           <button
+            type="button"
             onClick={reset}
             className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
           >
@@ -278,25 +340,107 @@ export default function MeshSimulator() {
         </div>
       </div>
 
-      {routeFrom && (
-        <p className="text-fips-highlight text-xs mb-2 font-mono">
-          Click a destination node to show the route from {routeFrom}.
-        </p>
-      )}
+      <div
+        className="mb-3 rounded border border-fips-border bg-fips-bg/40 p-3 flex flex-wrap items-end gap-3 text-xs"
+        role="group"
+        aria-label="Keyboard-accessible mesh controls"
+      >
+        <label className="flex flex-col gap-1">
+          <span className="text-fips-muted font-mono uppercase tracking-wide">Selected</span>
+          <select
+            value={selectedNode ?? ""}
+            onChange={(e) => {
+              const v = e.target.value || null;
+              setSelectedNode(v);
+              if (v) setStatusMsg(`Selected node ${v}. Use arrow keys to move it.`);
+            }}
+            className="bg-fips-surface border border-fips-border rounded px-2 py-1 font-mono"
+          >
+            <option value="">(none)</option>
+            {sortedIds.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-fips-muted font-mono uppercase tracking-wide">Route from</span>
+          <select
+            value={routeFrom ?? ""}
+            onChange={(e) => setRouteFrom(e.target.value || null)}
+            className="bg-fips-surface border border-fips-border rounded px-2 py-1 font-mono"
+          >
+            <option value="">(choose)</option>
+            {sortedIds.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-fips-muted font-mono uppercase tracking-wide">Route to</span>
+          <select
+            value={routeTo ?? ""}
+            onChange={(e) => setRouteTo(e.target.value || null)}
+            className="bg-fips-surface border border-fips-border rounded px-2 py-1 font-mono"
+          >
+            <option value="">(choose)</option>
+            {sortedIds.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={showRouteFromForm}
+          disabled={!routeFrom || !routeTo}
+          className="px-3 py-1.5 rounded border border-fips-border hover:border-fips-accent/40 transition-colors disabled:opacity-30"
+        >
+          Show route
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setRouteFrom(null);
+            setRouteTo(null);
+            setRoutePath([]);
+            setStatusMsg("Route cleared.");
+          }}
+          className="px-3 py-1.5 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
+        >
+          Clear
+        </button>
+      </div>
+
+      <p className="text-fips-muted text-xs mb-2">
+        Tip: click a node to select it, then use arrow keys to nudge it (Shift = larger steps, Esc
+        to deselect). Screen reader users can pick a source and destination above and press{" "}
+        <kbd className="font-mono">Show route</kbd>.
+      </p>
 
       <canvas
         ref={canvasRef}
         width={WIDTH}
         height={HEIGHT}
         role="img"
-        aria-label="Interactive mesh network diagram. Drag nodes to reposition them; tap a node to select it; use the buttons above to pick a route or remove a link."
-        className="w-full rounded border border-fips-border bg-fips-bg cursor-crosshair touch-none select-none"
+        tabIndex={0}
+        aria-label="Interactive mesh network diagram. Drag nodes to reposition them; tap a node to select it; arrow keys nudge the selected node."
+        className="w-full rounded border border-fips-border bg-fips-bg cursor-crosshair touch-none select-none focus:outline-none focus:ring-2 focus:ring-fips-accent"
         style={{ maxWidth: WIDTH }}
         onPointerDown={handleCanvasPointerDown}
         onPointerMove={handleCanvasPointerMove}
         onPointerUp={handleCanvasPointerUp}
         onPointerCancel={handleCanvasPointerUp}
+        onKeyDown={handleCanvasKeyDown}
       />
+
+      <div aria-live="polite" className="sr-only">
+        {statusMsg}
+      </div>
 
       <div className="mt-3 flex gap-4 text-xs text-fips-muted">
         <span className="flex items-center gap-1">
