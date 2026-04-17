@@ -12,6 +12,11 @@ const FIPS_SITE = "https://fips.network";
 const LEARN_FIPS_REPO = "https://github.com/dergigi/learn-fips";
 const CORGAN_QUOTE_URL =
   "https://njump.to/nevent1qqsqjkq3yxynqsj7lkk6dst9h4el8yx4rlwysn8pngqewpxk9aqttncpzamhxue69uhhyetvv9ujumn0wvh8xmmrd9skctczyq4m4nj48mlt7kxa2kgjz60e9sgj86mpy8tm5zf0d3gpqjhuxxkw7qcyqqqqqqgg0hv3z";
+const FIPS_ANNOUNCEMENT_URL =
+  "https://njump.to/nevent1qvzqqqqqqypzq2a6ee2nal4ltrw4tyfpd8ujcyfradsjr4a6pyhkc5qsft7rrt80qyt8wumn8ghj7cn9wehjumn0wd68yvfwvdhk6tcpz4mhxue69uhhyetvv9ujuerpd46hxtnfduhsqgxxce3t2qj4y3qj30qc6a68hcjkhvuh7ua3ktzu04fqe5gmwhgp8spz62cn";
+const FIPS_HASHTAG_URL = "https://ants.sh/t/fips";
+const SOVENG_PODCAST_URL =
+  "https://sovereignengineering.io/podcast/24-building-fips-w-johnathan-corgan";
 ---
 
 <Base title="Connect and Contribute">
@@ -100,13 +105,18 @@ const CORGAN_QUOTE_URL =
         </li>
         <li>
           <span class="font-semibold">Nostr.</span> FIPS is a Nostr-native project. The author and a growing
-          crowd of FIPS tinkerers hang out on Nostr and discuss new builds, test-node topology, and protocol
-          quirks there. Follow the threads around <a
-            href={CORGAN_QUOTE_URL}
+          crowd of FIPS tinkerers hang out there and discuss new builds, test-node topology, and protocol
+          quirks. The <a
+            href={FIPS_HASHTAG_URL}
             target="_blank"
             rel="noopener"
-            class="text-fips-accent underline">notes like this</a
-          > from the author.
+            class="text-fips-accent underline"><code class="font-mono">#FIPS</code> hashtag feed</a
+          > on ants.sh is the easiest way to follow along, and the <a
+            href={FIPS_ANNOUNCEMENT_URL}
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">original announcement note</a
+          > is a good thread to reply under.
         </li>
         <li>
           <span class="font-semibold">The mesh itself.</span> Once you are on the test mesh from the previous
@@ -193,6 +203,40 @@ const CORGAN_QUOTE_URL =
             a new lesson is a couple of files.
           </p>
         </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Hear it from the source</h2>
+
+      <p>
+        If you want the project's own words on why FIPS exists and where it is headed, these are the
+        two most concentrated doses:
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-3 not-prose my-2">
+        <a
+          href={FIPS_ANNOUNCEMENT_URL}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">Announcing FIPS</div>
+          <div class="text-xs text-fips-muted">
+            Johnathan Corgan's v0.1.0 announcement on Nostr. The pitch in his own words: Nostr gives
+            you identity, FIPS gives you the network underneath.
+          </div>
+        </a>
+        <a
+          href={SOVENG_PODCAST_URL}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">SovEng podcast, episode 24</div>
+          <div class="text-xs text-fips-muted">
+            36-minute walk through how FIPS started, what 150 nodes on the testnet taught them, and
+            where the protocol is going next.
+          </div>
+        </a>
       </div>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">A closing note</h2>
