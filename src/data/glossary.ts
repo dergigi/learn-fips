@@ -87,6 +87,29 @@ export const glossary: GlossaryTerm[] = [
     tags: ["routing"],
   },
   {
+    id: "rtt",
+    term: "RTT",
+    expansion: "Round-trip time",
+    summary: "Time between sending a packet and receiving its matching reply. MMP's latency input.",
+    detail:
+      "FIPS samples RTT per-peer from MMP's timestamp-echo fields, not the spin bit (inter-frame processing delays make spin-bit samples too noisy to use directly). The raw per-packet value is fed into an exponentially smoothed estimator (SRTT) before anything else reads it.",
+    lessons: [10],
+    tags: ["measurement"],
+    acronyms: ["RTT"],
+  },
+  {
+    id: "srtt",
+    term: "SRTT",
+    expansion: "Smoothed round-trip time",
+    summary:
+      "Jacobson-style exponentially weighted RTT with α = 1/8. The latency half of link_cost.",
+    detail:
+      "On every timestamp-echo sample, MMP updates SRTT = α × sample + (1 − α) × SRTT with α = 1/8. SRTT feeds link_cost as ETX × (1 + SRTT_ms / 100), so a 500ms link pays a ~6× multiplier before loss is even considered. The same SRTT clamps the MMP report interval to clamp(2 × SRTT, 100ms, 2000ms).",
+    lessons: [10],
+    tags: ["measurement"],
+    acronyms: ["SRTT"],
+  },
+  {
     id: "spin-bit",
     term: "Spin bit",
     summary: "A single-bit field in the FMP header used for RTT estimation by transit observers.",
@@ -290,6 +313,18 @@ export const glossary: GlossaryTerm[] = [
     lessons: [4],
     tags: ["transport"],
     acronyms: ["BLE"],
+  },
+  {
+    id: "lora",
+    term: "LoRa",
+    expansion: "Long Range radio",
+    summary:
+      "Sub-GHz chirp-spread-spectrum radio with small MTU (~200B) and seconds-scale latency. A viable datagram transport for remote mesh segments.",
+    detail:
+      "LoRa runs on unlicensed sub-GHz bands with duty-cycle rules that cap airtime. Frames fit in roughly 200 bytes and round-trip time runs from 500ms into the seconds. FIPS can ride it because FMP is datagram-oriented, and the mesh MTU advertisement plus the SRTT term in link_cost keep a LoRa hop from being picked as a parent whenever a faster transport is available.",
+    lessons: [4, 10],
+    tags: ["transport"],
+    acronyms: ["LoRa"],
   },
   {
     id: "mac-address",
