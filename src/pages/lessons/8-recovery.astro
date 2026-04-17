@@ -86,20 +86,20 @@ import {
 
       <div class="grid md:grid-cols-3 gap-3 not-prose my-4">
         <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
-          <p class="font-mono text-fips-accent text-sm mb-1">CoordsRequired (0x15)</p>
+          <p class="font-mono text-fips-accent text-sm mb-1">CoordsRequired (0x20)</p>
           <p class="text-xs text-fips-muted">
             No cached coordinates for the destination. Transit node has nothing to forward with.
           </p>
         </div>
         <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
-          <p class="font-mono text-fips-accent text-sm mb-1">PathBroken (0x16)</p>
+          <p class="font-mono text-fips-accent text-sm mb-1">PathBroken (0x21)</p>
           <p class="text-xs text-fips-muted">
             Coordinates are cached, but no neighbor is closer to the destination than the transit
             node itself. Greedy routing hit a local minimum.
           </p>
         </div>
         <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
-          <p class="font-mono text-fips-accent text-sm mb-1">MtuExceeded (0x17)</p>
+          <p class="font-mono text-fips-accent text-sm mb-1">MtuExceeded (0x22)</p>
           <p class="text-xs text-fips-muted">
             Packet does not fit the next-hop link MTU. The mesh layer will not fragment, so the
             source has to shrink its payloads.

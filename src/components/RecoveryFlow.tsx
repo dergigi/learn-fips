@@ -136,7 +136,7 @@ function buildCoordsRequired(): Frame[] {
     cpRemaining: 0,
     title: "R2 emits CoordsRequired back to Src",
     detail:
-      "A new SessionDatagram addressed to the original source, payload = CoordsRequired (0x15). R2 routes it via find_next_hop(src_addr). Transit-side rate limit: at most one per destination per 100ms.",
+      "A new SessionDatagram addressed to the original source, payload = CoordsRequired (0x20, FSP msg_type with U flag set). R2 routes it via find_next_hop(src_addr). Transit-side rate limit: at most one per destination per 100ms.",
     link: { from: 2, to: 1, packet: { kind: "err-coords" } },
   });
 
@@ -260,7 +260,7 @@ function buildPathBroken(): Frame[] {
     cpRemaining: 0,
     title: "R2 emits PathBroken back to Src",
     detail:
-      "Same message format as CoordsRequired, different payload (0x16). R2 does not flush its stale entry by itself; it just tells the source.",
+      "Same message format as CoordsRequired, different payload (0x21). R2 does not flush its stale entry by itself; it just tells the source.",
     link: { from: 2, to: 1, packet: { kind: "err-path" } },
   });
 

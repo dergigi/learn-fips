@@ -226,7 +226,7 @@ export const glossary: GlossaryTerm[] = [
     summary:
       "CoordsRequired, PathBroken, and MtuExceeded: explicit feedback from transit nodes to the source.",
     detail:
-      "When a transit node cannot forward a SessionDatagram, it builds a new SessionDatagram back to the source with one of three payloads: CoordsRequired (0x15) if it has no cached coordinates for the destination, PathBroken (0x16) if its cached coordinates put it at a local minimum, MtuExceeded (0x17) if the packet is too large for the next-hop link. Rate-limited to one per destination per 100ms at the transit node.",
+      "When a transit node cannot forward a SessionDatagram, it builds a new SessionDatagram back to the source with one of three FSP payloads (U flag set, plaintext): CoordsRequired (0x20) if it has no cached coordinates for the destination, PathBroken (0x21) if its cached coordinates put it at a local minimum, MtuExceeded (0x22) if the packet is too large for the next-hop link. Rate-limited to one per destination per 100ms at the transit node.",
     lessons: [8],
     tags: ["routing", "recovery"],
   },
