@@ -96,4 +96,9 @@ export const contributors: Contributor[] = [
     name: "Arjen",
     npub: "npub1hw6amg8p24ne08c9gdq8hhpqx0t0pwanpae9z25crn7m9uy7yarse465gr",
   },
+  {
+    github: "sh1ftred",
+    name: "red",
+    npub: "npub1ftt05tgku25m2akgvw6v7aqy5ux5mseqcrzy05g26ml43xf74nyqsredsh",
+  },
 ];
