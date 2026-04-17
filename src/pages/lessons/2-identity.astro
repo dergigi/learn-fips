@@ -72,7 +72,9 @@ import { NODE_ADDR_BYTES, XONLY_PUBKEY_BYTES } from "../../lib/constants";
       <p class="text-sm text-fips-muted">
         Both <code class="mono">npub</code> and <code class="mono">node_addr</code> are derived directly
         from the raw x-only public key in parallel. The <code class="mono">npub</code> is just a bech32
-        encoding for humans; it is not an input to the routing hash.
+        encoding for humans; it is not an input to the routing hash. In the upstream Rust implementation,
+        these two steps are <code class="mono">NodeAddr::from_pubkey</code> and
+        <code class="mono">FipsAddress::from_node_addr</code>.
       </p>
 
       <p>
