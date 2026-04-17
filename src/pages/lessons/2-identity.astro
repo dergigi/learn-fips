@@ -6,7 +6,7 @@ import CollapsibleSection from "../../components/CollapsibleSection.astro";
 import IdentityGenerator from "../../components/IdentityGenerator";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
-import { NODE_ADDR_BYTES, PUBKEY_BYTES } from "../../lib/constants";
+import { NODE_ADDR_BYTES, XONLY_PUBKEY_BYTES } from "../../lib/constants";
 ---
 
 <Base title="Identity">
@@ -42,26 +42,38 @@ import { NODE_ADDR_BYTES, PUBKEY_BYTES } from "../../lib/constants";
       >
         <div class="flex items-center gap-2">
           <span class="text-fips-muted w-32">Public Key</span>
-          <span class="text-fips-text">({PUBKEY_BYTES} bytes, compressed secp256k1)</span>
+          <span class="text-fips-text"
+            >(x-only secp256k1 coordinate, {XONLY_PUBKEY_BYTES} bytes)</span
+          >
         </div>
-        <div class="text-fips-accent pl-4">↓ bech32 encode x-only key</div>
-        <div class="flex items-center gap-2">
-          <span class="text-fips-muted w-32">npub</span>
-          <span class="text-fips-text">Application identity. What you share with others.</span>
-        </div>
-        <div class="text-fips-accent pl-4">
-          ↓ SHA-256, truncate to {NODE_ADDR_BYTES} bytes
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-fips-muted w-32">node_addr</span>
-          <span class="text-fips-text">Routing identifier. Appears in packet headers.</span>
-        </div>
-        <div class="text-fips-accent pl-4">↓ prepend 0xfd to first 15 bytes</div>
-        <div class="flex items-center gap-2">
-          <span class="text-fips-muted w-32">IPv6 address</span>
-          <span class="text-fips-text">fd00::/8 ULA for legacy IPv6 apps.</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div class="space-y-2">
+            <div class="text-fips-accent">↓ bech32 encode</div>
+            <div class="flex items-center gap-2">
+              <span class="text-fips-muted w-20">npub</span>
+              <span class="text-fips-text">Application identity. Shared with others.</span>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="text-fips-accent">↓ SHA-256, truncate to {NODE_ADDR_BYTES} bytes</div>
+            <div class="flex items-center gap-2">
+              <span class="text-fips-muted w-20">node_addr</span>
+              <span class="text-fips-text">Routing identifier. Appears in packet headers.</span>
+            </div>
+            <div class="text-fips-accent">↓ prepend 0xfd to first 15 bytes</div>
+            <div class="flex items-center gap-2">
+              <span class="text-fips-muted w-20">IPv6</span>
+              <span class="text-fips-text">fd00::/8 ULA for legacy IPv6 apps.</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <p class="text-sm text-fips-muted">
+        Both <code class="mono">npub</code> and <code class="mono">node_addr</code> are derived directly
+        from the raw x-only public key in parallel. The <code class="mono">npub</code> is just a bech32
+        encoding for humans; it is not an input to the routing hash.
+      </p>
 
       <p>
         The node_addr is a one-way hash. Given a node_addr, you cannot recover the public key. This
