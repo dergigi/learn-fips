@@ -210,6 +210,46 @@ function buildCoordsRequired(): Frame[] {
     link: { from: 0, to: 1, packet: { kind: "data", cp: true } },
   });
 
+  frames.push({
+    activeNode: 1,
+    routers,
+    cpRemaining: Math.max(0, N_WARMUP - 1),
+    title: "R1 reads the piggybacked coords and forwards",
+    detail:
+      "R1 had a warm cache already. The CP coords refresh its TTL. Greedy routing picks R2 as next hop.",
+    link: { from: 1, to: 2, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 2,
+    routers,
+    cpRemaining: Math.max(0, N_WARMUP - 1),
+    title: "R2 forwards with a freshly refreshed cache",
+    detail:
+      "R2's cache was re-warmed by the standalone CoordsWarmup a moment ago, and this CP-flagged packet reinforces it again. R2 runs find_next_hop and sends the packet onward.",
+    link: { from: 2, to: 3, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 3,
+    routers,
+    cpRemaining: Math.max(0, N_WARMUP - 1),
+    title: "R3 relays to Dst",
+    detail: "R3's cache was warm throughout. Ordinary forward.",
+    link: { from: 3, to: 4, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 4,
+    routers,
+    cpRemaining: Math.max(0, N_WARMUP - 1),
+    title: "Dst receives the packet",
+    detail:
+      "End-to-end delivery is restored. FSP will keep adding CP coordinates for the remaining " +
+      Math.max(0, N_WARMUP - 1) +
+      " packets, then drop back to minimal SessionDatagrams once the counter hits zero.",
+  });
+
   return frames;
 }
 
@@ -306,14 +346,53 @@ function buildPathBroken(): Frame[] {
     link: { from: 2, to: 0, packet: { kind: "lookup-resp" } },
   });
 
+  routers = setCache(routers, 0, "warm");
   frames.push({
     activeNode: 0,
-    routers: setCache(routers, 0, "warm"),
+    routers,
     cpRemaining: N_WARMUP - 1,
     title: "Data resumes with CP set",
     detail:
       "Same pattern as after CoordsRequired: the next data packet carries cleartext coordinates and refreshes every cache along the way.",
     link: { from: 0, to: 1, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 1,
+    routers,
+    cpRemaining: N_WARMUP - 1,
+    title: "R1 reads the new coords and forwards",
+    detail:
+      "R1's cache was never stale, but the CP coords from the LookupResponse update its TTL. Greedy routing picks R2 as next hop.",
+    link: { from: 1, to: 2, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 2,
+    routers,
+    cpRemaining: N_WARMUP - 1,
+    title: "R2 forwards using the new coords",
+    detail:
+      "The same router that held stale coords a few frames ago now has the correct ones, written in by the LookupResponse. find_next_hop finds a closer peer and forwards.",
+    link: { from: 2, to: 3, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 3,
+    routers,
+    cpRemaining: N_WARMUP - 1,
+    title: "R3 relays to Dst",
+    detail: "R3's cache was warm throughout. Ordinary forward.",
+    link: { from: 3, to: 4, packet: { kind: "data", cp: true } },
+  });
+
+  frames.push({
+    activeNode: 4,
+    routers,
+    cpRemaining: N_WARMUP - 1,
+    title: "Dst receives the packet",
+    detail:
+      "End-to-end delivery is restored. The tree itself needed no changes; one LookupRequest / LookupResponse pair fixed every stale cache on the path.",
   });
 
   return frames;
