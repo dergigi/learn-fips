@@ -2,6 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import SeeAlso from "../../components/SeeAlso.astro";
+import CollapsibleSection from "../../components/CollapsibleSection.astro";
 import IdentityGenerator from "../../components/IdentityGenerator";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
@@ -79,49 +80,49 @@ import { NODE_ADDR_BYTES, PUBKEY_BYTES } from "../../lib/constants";
 
       <IdentityGenerator client:visible />
 
-      <h2 class="text-xl font-semibold mt-8 mb-4">Who sees what?</h2>
+      <CollapsibleSection title="Who sees what?">
+        <p>
+          Different actors in the network have access to different levels of identity information.
+          This table summarizes what each can observe:
+        </p>
 
-      <p>
-        Different actors in the network have access to different levels of identity information.
-        This table summarizes what each can observe:
-      </p>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b border-fips-border text-left">
-              <th class="py-2 pr-4 text-fips-muted font-medium">Observer</th>
-              <th class="py-2 pr-4 text-fips-muted font-medium">Sees</th>
-            </tr>
-          </thead>
-          <tbody class="text-fips-text">
-            <tr class="border-b border-fips-border/50">
-              <td class="py-2 pr-4 font-medium">Transport observer</td>
-              <td class="py-2 text-fips-muted"
-                >Encrypted packets, timing, packet sizes. No FIPS-level identifiers.</td
-              >
-            </tr>
-            <tr class="border-b border-fips-border/50">
-              <td class="py-2 pr-4 font-medium">Direct peer</td>
-              <td class="py-2 text-fips-muted"
-                >Your npub (from Noise IK handshake), traffic volume, timing.</td
-              >
-            </tr>
-            <tr class="border-b border-fips-border/50">
-              <td class="py-2 pr-4 font-medium">Intermediate router</td>
-              <td class="py-2 text-fips-muted"
-                >Source and destination node_addrs, packet size. Cannot read payload.</td
-              >
-            </tr>
-            <tr>
-              <td class="py-2 pr-4 font-medium">Destination</td>
-              <td class="py-2 text-fips-muted"
-                >Your npub (from Noise XK session), payload content.</td
-              >
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-fips-border text-left">
+                <th class="py-2 pr-4 text-fips-muted font-medium">Observer</th>
+                <th class="py-2 pr-4 text-fips-muted font-medium">Sees</th>
+              </tr>
+            </thead>
+            <tbody class="text-fips-text">
+              <tr class="border-b border-fips-border/50">
+                <td class="py-2 pr-4 font-medium">Transport observer</td>
+                <td class="py-2 text-fips-muted"
+                  >Encrypted packets, timing, packet sizes. No FIPS-level identifiers.</td
+                >
+              </tr>
+              <tr class="border-b border-fips-border/50">
+                <td class="py-2 pr-4 font-medium">Direct peer</td>
+                <td class="py-2 text-fips-muted"
+                  >Your npub (from Noise IK handshake), traffic volume, timing.</td
+                >
+              </tr>
+              <tr class="border-b border-fips-border/50">
+                <td class="py-2 pr-4 font-medium">Intermediate router</td>
+                <td class="py-2 text-fips-muted"
+                  >Source and destination node_addrs, packet size. Cannot read payload.</td
+                >
+              </tr>
+              <tr>
+                <td class="py-2 pr-4 font-medium">Destination</td>
+                <td class="py-2 text-fips-muted"
+                  >Your npub (from Noise XK session), payload content.</td
+                >
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CollapsibleSection>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Why Nostr keys?</h2>
 
