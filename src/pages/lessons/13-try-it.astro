@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import SeeAlso from "../../components/SeeAlso.astro";
 import InstallPicker from "../../components/InstallPicker";
+import HeroMesh from "../../components/HeroMesh";
 
 const TEST_PEER_NPUB = "npub1qmc3cvfz0yu2hx96nq3gp55zdan2qclealn7xshgr448d3nh6lks7zel98";
 const TEST_PEER_ADDR = "217.77.8.91:2121";
@@ -219,4 +220,38 @@ curl -6 http://npub1...yyy.fips/`}</pre>
     <SeeAlso terms={["fips", "node_addr", "fips-gateway", "ipv6-ula", "identity-cache"]} />
     <LessonNav current={13} />
   </article>
+
+  <section class="hex-bg relative overflow-hidden">
+    <div class="hero-mesh-wrap absolute inset-0">
+      <HeroMesh client:load />
+      <div class="hero-mesh-fade absolute inset-0 pointer-events-none"></div>
+    </div>
+    <figure class="relative max-w-3xl mx-auto px-4 pt-16 pb-40 md:pb-48">
+      <span
+        aria-hidden="true"
+        class="absolute -top-2 left-4 md:left-6 text-fips-accent font-mono text-6xl leading-none select-none"
+        >&ldquo;</span
+      >
+      <blockquote class="text-fips-text text-lg md:text-xl leading-relaxed italic">
+        <p class="mb-4">
+          Engineering solutions to problems is mostly about assembling existing pieces into a new
+          whole, more so than inventing a new wheel.
+        </p>
+        <p>
+          FIPS combines known, battle tested concepts going back decades in the fields of
+          networking, cryptography, distributed computing, resilient communications, and operating
+          systems, with full credit to those who came before.
+        </p>
+      </blockquote>
+      <figcaption class="mt-6 text-sm text-fips-muted font-mono">
+        &mdash;
+        <a
+          href="https://njump.to/nevent1qqsqjkq3yxynqsj7lkk6dst9h4el8yx4rlwysn8pngqewpxk9aqttncpzamhxue69uhhyetvv9ujumn0wvh8xmmrd9skctczyq4m4nj48mlt7kxa2kgjz60e9sgj86mpy8tm5zf0d3gpqjhuxxkw7qcyqqqqqqgg0hv3z"
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent hover:underline">Johnathan Corgan</a
+        >, author of FIPS
+      </figcaption>
+    </figure>
+  </section>
 </Base>
