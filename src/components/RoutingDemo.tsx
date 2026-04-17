@@ -97,8 +97,8 @@ export default function RoutingDemo() {
         label: "Decision",
         detail: found
           ? `${best.peer} is closer (${best.dist} < ${myDist}). Forward to ${best.peer}.`
-          : `No peer is closer. Routing fails (would backtrack in real implementation).`,
-        result: found ? `Next hop: ${best.peer}` : "No route found",
+          : `No peer is strictly closer to the destination than the current node. find_next_hop() returns None; in real FIPS the caller emits a PathBroken error back to the source.`,
+        result: found ? `Next hop: ${best.peer}` : "No route; PathBroken signaled",
         fired: true,
       });
     }

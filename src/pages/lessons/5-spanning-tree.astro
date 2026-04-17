@@ -102,15 +102,20 @@ import { getQuiz } from "../../data/quizzes";
         <li><strong>Direct peer.</strong> Is the destination a direct peer? Forward to it.</li>
         <li>
           <strong>Bloom filter candidate.</strong> Does any peer's bloom filter claim reachability? Forward
-          to the closest such peer by tree distance.
+          to the closest such peer by tree distance. Requires the destination's coordinates to be in the
+          local cache.
         </li>
         <li>
-          <strong>Greedy tree routing.</strong> Forward to the peer that minimizes tree distance to the
-          destination's coordinates.
+          <strong>Greedy tree routing.</strong> Fallback when bloom filters have not converged yet. Forward
+          to the peer that minimizes tree distance to the destination's coordinates.
         </li>
         <li>
-          <strong>Backtrack.</strong> Forward to the parent (toward the root), hoping a higher-up node
-          has better information.
+          <strong>No route.</strong> No peer is strictly closer to the destination than this node, or
+          the destination's coordinates are missing. Drop the packet and emit a
+          <code class="mono text-fips-accent">PathBroken</code> or
+          <code class="mono text-fips-accent">CoordsRequired</code> error signal back to the source. There
+          is no "forward to the parent and hope" fallback: the source is responsible for repairing the
+          routing state.
         </li>
       </ol>
 
