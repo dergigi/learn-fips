@@ -180,6 +180,62 @@ export const glossary: GlossaryTerm[] = [
     acronyms: ["Noise XK", "XK"],
   },
   {
+    id: "secp256k1",
+    term: "secp256k1",
+    summary: "The elliptic curve used for FIPS identity keys, the same one Bitcoin and Nostr use.",
+    detail:
+      "A FIPS node's identity is a secp256k1 keypair. Public keys on the wire are 33 bytes (compressed) or 32 bytes (x-only, as Nostr uses). The curve's x-only convention lets a single npub serve as both a Nostr identity and a FIPS node identity without re-derivation.",
+    lessons: [2, 9],
+    tags: ["identity", "encryption"],
+    acronyms: ["secp256k1"],
+  },
+  {
+    id: "schnorr",
+    term: "Schnorr signatures",
+    expansion: "BIP340 Schnorr signature scheme",
+    summary:
+      "64-byte signatures over secp256k1, used to authenticate TreeAnnounce and LookupResponse.",
+    detail:
+      "FIPS uses BIP340 Schnorr signatures (the scheme Bitcoin Taproot and Nostr events also use). Signatures are 64 bytes. Routing-layer announcements that need to be verifiable by any receiver (TreeAnnounce, LookupResponse, revocations) carry a Schnorr signature under the signer's x-only pubkey.",
+    lessons: [2, 9],
+    tags: ["identity", "encryption"],
+    acronyms: ["Schnorr", "BIP340"],
+  },
+  {
+    id: "sha-256",
+    term: "SHA-256",
+    summary:
+      "The hash function used to derive node_addr from a public key and to mix keys inside Noise.",
+    detail:
+      "SHA-256 of the 32-byte x-only pubkey, truncated to the first 16 bytes, gives the node_addr. It is also the hash primitive inside the Noise_IK and Noise_XK patterns FIPS uses (cipher suite: Noise_IK_25519_ChaChaPoly_SHA256).",
+    lessons: [2, 9],
+    tags: ["identity", "encryption"],
+    acronyms: ["SHA-256", "SHA256"],
+  },
+  {
+    id: "aead",
+    term: "AEAD",
+    expansion: "Authenticated Encryption with Associated Data",
+    summary:
+      "Encryption that produces a tag covering both the ciphertext and an extra plaintext header.",
+    detail:
+      "FIPS uses AEAD at both layers: FMP encrypts per-link with the 16-byte outer header as associated data; FSP encrypts end-to-end with the FSP header as associated data. A modified header fails authentication even though it was never encrypted, which is what lets transit routers read the routing envelope without being able to forge it.",
+    lessons: [3, 6, 9],
+    tags: ["encryption"],
+    acronyms: ["AEAD"],
+  },
+  {
+    id: "chacha20-poly1305",
+    term: "ChaCha20-Poly1305",
+    expansion: "AEAD cipher (RFC 8439)",
+    summary: "The AEAD cipher FIPS uses for both FMP link encryption and FSP session encryption.",
+    detail:
+      "ChaCha20 is the stream cipher; Poly1305 is the MAC over the ciphertext plus the associated data, producing a 16-byte authentication tag at the end of the frame. ChaCha20-Poly1305 is constant-time on targets without AES hardware, which matters for the low-power nodes FIPS targets.",
+    lessons: [6, 9],
+    tags: ["encryption"],
+    acronyms: ["ChaCha20-Poly1305", "ChaCha20", "Poly1305"],
+  },
+  {
     id: "ipv6-ula",
     term: "IPv6 ULA (fd00::/8)",
     summary:
@@ -198,6 +254,66 @@ export const glossary: GlossaryTerm[] = [
       "FIPS treats transports as pluggable drivers. A node can run multiple transports at once, bridging peers on different media into the same mesh. The protocol above is unchanged: only the framing and peer discovery differ per transport.",
     lessons: [4, 7],
     tags: ["architecture"],
+  },
+  {
+    id: "udp",
+    term: "UDP",
+    expansion: "User Datagram Protocol",
+    summary:
+      "The default overlay transport. FIPS listens on UDP 2121 and carries one FMP frame per UDP datagram.",
+    detail:
+      "UDP is the natural fit: FIPS is datagram-oriented, preserves packet boundaries, and avoids TCP-over-TCP interactions if FSP tunnels TCP. The default port is 2121. UDP does not traverse NAT by itself in FIPS v1; a node behind NAT needs port forwarding, a public peer, or a relay.",
+    lessons: [4, 7, 13],
+    tags: ["transport"],
+    acronyms: ["UDP"],
+  },
+  {
+    id: "tcp",
+    term: "TCP",
+    expansion: "Transmission Control Protocol",
+    summary:
+      "Optional fallback transport when UDP is blocked, and the most common guest traffic the IPv6 adapter carries.",
+    detail:
+      "FIPS prefers UDP because running FIPS inside TCP would stack two reliability layers on top of each other and interact badly under loss. TCP is available as a fallback transport where UDP is blocked. The IPv6 adapter also clamps TCP MSS on every SYN so guest connections size segments to the mesh path MTU.",
+    lessons: [4, 12, 13],
+    tags: ["transport"],
+    acronyms: ["TCP"],
+  },
+  {
+    id: "ble",
+    term: "BLE",
+    expansion: "Bluetooth Low Energy",
+    summary:
+      "Short-range transport over L2CAP connection-oriented channels, with per-link MTU negotiation.",
+    detail:
+      "BLE transports run over L2CAP CoC (connection-oriented channels), not GATT. MTU ranges roughly 23 to 517 bytes depending on the link, so FIPS aggressively negotiates up and relies on the mesh MTU advertisement to keep FSP datagrams from exceeding the link.",
+    lessons: [4],
+    tags: ["transport"],
+    acronyms: ["BLE"],
+  },
+  {
+    id: "mac-address",
+    term: "MAC address",
+    expansion: "Media Access Control",
+    summary:
+      "Layer-2 hardware identifier used by the Ethernet and WiFi transports to reach a direct peer.",
+    detail:
+      "FMP's Ethernet and WiFi drivers address peers by MAC. The MAC is opaque to everything above FMP: the routing envelope uses node_addr, not MAC. Not to be confused with the cryptographic MAC (message authentication code) produced by Poly1305, which authenticates each AEAD frame.",
+    lessons: [4],
+    tags: ["transport"],
+    acronyms: ["MAC"],
+  },
+  {
+    id: "nat",
+    term: "NAT",
+    expansion: "Network Address Translation",
+    summary:
+      "Router behaviour that rewrites source addresses and ports, and a problem FIPS v1 does not solve on its own.",
+    detail:
+      "A node behind NAT cannot accept unsolicited inbound UDP on 2121 without port forwarding, a publicly addressed peer to bounce through, or a relay path via other mesh nodes. The fips-gateway sidecar also uses NAT in the other direction: nftables DNAT/SNAT rules map a pool of fd01::/112 virtual IPs to mesh destinations so unmodified LAN hosts can reach them.",
+    lessons: [4, 12],
+    tags: ["transport", "compatibility"],
+    acronyms: ["NAT"],
   },
   {
     id: "coordinate-cache",
