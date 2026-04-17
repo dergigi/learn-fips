@@ -306,6 +306,54 @@ article li a {
   }
 }
 
+/*
+ * Knowledge-check quiz card. Leans on fips-blue to separate the quiz
+ * from the surrounding prose without shouting. The outer box-shadow
+ * is soft and static. A thin gradient fill on the inside makes the
+ * card read as a distinct surface even when the scroll position puts
+ * it flush against other cards.
+ */
+.quiz-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--color-fips-blue) 45%, var(--color-fips-border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-fips-blue) 8%, var(--color-fips-surface)) 0%,
+    color-mix(in srgb, var(--color-fips-blue) 3%, var(--color-fips-surface)) 100%
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-fips-blue) 20%, transparent),
+    0 0 24px -6px color-mix(in srgb, var(--color-fips-blue) 55%, transparent),
+    0 0 48px -12px color-mix(in srgb, var(--color-fips-blue) 35%, transparent);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.quiz-card:hover,
+.quiz-card:focus-within {
+  border-color: color-mix(in srgb, var(--color-fips-blue) 65%, var(--color-fips-border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-fips-blue) 30%, transparent),
+    0 0 32px -4px color-mix(in srgb, var(--color-fips-blue) 65%, transparent),
+    0 0 64px -12px color-mix(in srgb, var(--color-fips-blue) 45%, transparent);
+}
+
+.quiz-card .quiz-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fips-blue);
+  background-color: color-mix(in srgb, var(--color-fips-blue) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-fips-blue) 35%, transparent);
+}
+
 /* Interactive component containers - horizontal scroll on small screens */
 @media (max-width: 640px) {
   canvas {

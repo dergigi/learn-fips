@@ -75,9 +75,27 @@ export default function Quiz({ questions, title = "Knowledge Check", lessonSlug 
   const passed = submitted && score === questions.length;
 
   return (
-    <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-6">
-      <div className="flex items-baseline justify-between gap-4 mb-4">
-        <h3 className="text-lg font-semibold">{title}</h3>
+    <div className="quiz-card my-10 rounded-xl p-6">
+      <div className="flex items-center justify-between gap-4 mb-5">
+        <div className="flex items-center gap-3">
+          <span className="quiz-badge" aria-hidden="true">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            Quiz
+          </span>
+          <h3 className="text-lg font-semibold">{title}</h3>
+        </div>
         {submitted && (
           <span
             className={`text-xs font-mono px-2 py-0.5 rounded ${
