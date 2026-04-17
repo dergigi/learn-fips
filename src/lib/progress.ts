@@ -45,6 +45,7 @@ export const LESSONS_WITH_QUIZ = new Set<string>([
   "7-putting-it-together",
   "8-recovery",
   "9-wire-formats",
+  "10-mmp",
 ]);
 
 function empty(): Progress {

@@ -53,9 +53,48 @@ export const glossary: GlossaryTerm[] = [
     expansion: "FIPS Metrics / Measurement Protocol",
     summary: "Background measurement of link quality and path cost.",
     detail:
-      "MMP exchanges latency, loss, and throughput samples between peers. Its results feed into spanning-tree cost comparisons and routing decisions without affecting the critical data path.",
-    lessons: [5, 7],
+      "MMP runs per peer link in three modes (full, lightweight, minimal). It tracks SRTT, loss, jitter, goodput, OWD trend, and ETX, emits periodic SenderReports and ReceiverReports, and exposes a single link_cost that the spanning tree uses for parent selection.",
+    lessons: [5, 7, 10],
     tags: ["layer"],
+  },
+  {
+    id: "etx",
+    term: "ETX",
+    expansion: "Expected Transmission Count",
+    summary: "1 / (forward_ratio × reverse_ratio). A clean link has ETX near 1.",
+    detail:
+      "MMP derives ETX from bidirectional delivery ratios observed over the reporting interval. It is the loss half of link cost: a link with 20% loss in each direction has ETX near 1.56, meaning the mesh effectively has to transmit roughly 1.56 times per successful delivery.",
+    lessons: [10],
+    tags: ["routing", "layer"],
+  },
+  {
+    id: "link-cost",
+    term: "link_cost",
+    summary: "ETX × (1 + SRTT_ms / 100). The scalar the spanning tree minimizes.",
+    detail:
+      "Every peer link has a link_cost that combines loss (via ETX) and latency (via SRTT). A node's effective_depth through a candidate parent is peer.depth + link_cost. Parent switches require the new candidate to beat the current parent by at least parent_hysteresis (default 20%).",
+    lessons: [10],
+    tags: ["routing"],
+  },
+  {
+    id: "spin-bit",
+    term: "Spin bit",
+    summary: "A single-bit field in the FMP header used for RTT estimation by transit observers.",
+    detail:
+      "The TX side reflects the spin bit back per the QUIC state machine so an on-path observer can derive RTT without decryption. FIPS implements the reflection, but its own RTT samples come only from MMP timestamp-echo: inter-frame processing delays make the spin-bit RTT too noisy to use directly.",
+    lessons: [10],
+    tags: ["layer"],
+  },
+  {
+    id: "ecn",
+    term: "ECN / CE flag",
+    expansion: "Explicit Congestion Notification",
+    summary:
+      "A flag bit transit nodes set when they see loss, high ETX, or kernel buffer drops ahead.",
+    detail:
+      "CE is sticky: once set along a path, every downstream hop leaves it set. At the IPv6 adapter, CE-marked FSP packets get CE written into the Traffic Class ECN bits (only if the inner packet was ECT-capable), so guest TCP stacks cut their window without the mesh ever parsing TCP.",
+    lessons: [10],
+    tags: ["layer", "routing"],
   },
   {
     id: "node_addr",

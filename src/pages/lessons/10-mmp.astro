@@ -1,0 +1,221 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import LinkCostLab from "../../components/LinkCostLab";
+import { getQuiz } from "../../data/quizzes";
+---
+
+<Base title="Measuring the Mesh">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 10</p>
+    <h1 class="text-3xl font-bold mb-8">Measuring the Mesh</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Every active peer link runs an instance of the Metrics Measurement Protocol, MMP. Its job is
+        to measure what the link is doing (latency, loss, jitter, goodput, congestion) and turn
+        those measurements into something the rest of the stack can act on. The spanning tree reads
+        MMP's per-link cost to decide who to use as a parent. The operator reads MMP's periodic
+        reports to understand what the mesh is doing.
+      </p>
+
+      <p>
+        MMP runs in three modes, picked by <code class="mono">node.mmp.mode</code>:
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-3 not-prose my-4">
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">full (default)</p>
+          <p class="text-xs text-fips-muted">
+            SenderReport and ReceiverReport both flow. All metrics available: RTT, loss, jitter,
+            goodput, OWD trend.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">lightweight</p>
+          <p class="text-xs text-fips-muted">
+            ReceiverReport only. Loss from counter gaps, jitter, OWD trend. No RTT.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">minimal</p>
+          <p class="text-xs text-fips-muted">
+            No reports at all. Only the spin bit and the CE congestion flag ride on regular traffic.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">What MMP measures</h2>
+
+      <p>
+        Every FMP frame carries a monotonic <code class="mono">counter</code> and a session-relative <code
+          class="mono">timestamp</code
+        > in its header. MMP derives everything from those fields plus periodic report messages.
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">SRTT.</span> Smoothed round-trip time, Jacobson-style with α =
+          1/8. Samples come only from ReceiverReport timestamp echoes, after the receiver's dwell time
+          has been subtracted.
+        </li>
+        <li>
+          <span class="text-fips-text">Loss.</span> Bidirectional loss inferred from counter gaps: any
+          missing counter between
+          <code class="mono">interval_start_counter</code> and
+          <code class="mono">interval_end_counter</code> is a dropped frame in that direction. Tracked
+          as both per-interval rate and a long-term EWMA.
+        </li>
+        <li>
+          <span class="text-fips-text">Jitter.</span> RFC 3550 interarrival jitter in microseconds.
+        </li>
+        <li>
+          <span class="text-fips-text">Goodput.</span> Payload bytes per second. MMP excludes its own
+          reports so the number reflects useful traffic.
+        </li>
+        <li>
+          <span class="text-fips-text">OWD trend.</span> One-way delay trend in microseconds per second,
+          signed. Latency rising before loss appears is the earliest hint of queue buildup.
+        </li>
+        <li>
+          <span class="text-fips-text">ETX.</span> Expected Transmission Count, derived from bidirectional
+          delivery ratios. A perfect link has ETX close to 1. A link with 20% loss in each direction has
+          ETX close to 1 / (0.8 × 0.8) ≈ 1.56.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Report scheduling</h2>
+
+      <p>
+        Reports ride at an RTT-adaptive interval:
+        <code class="mono">clamp(2 × SRTT, 100ms, 2000ms)</code>. A cold-start interval of 500ms
+        applies until SRTT converges. The clamp keeps chatter bounded on both ends: fast links do
+        not flood the CPU, slow links still produce enough samples for the EWMA to stay current.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Timestamp echo with dwell compensation</h2>
+
+      <p>
+        SRTT comes from the <code class="mono">timestamp_echo</code> and
+        <code class="mono">dwell_time</code> fields in ReceiverReport. The sender stamps each frame with
+        its session-relative
+        <code class="mono">timestamp</code>. The receiver stores the latest observed <code
+          class="mono">timestamp</code
+        > and, when it emits its next ReceiverReport, echoes that value along with the number of milliseconds
+        it sat on the value before sending. The original sender subtracts the dwell time to get a clean
+        RTT sample.
+      </p>
+
+      <div
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-xs space-y-1"
+      >
+        <div><span class="text-fips-muted">A→B</span> counter=42 timestamp=1000</div>
+        <div><span class="text-fips-muted">B receives at</span> T1 = 1012 (= A's clock + 12ms)</div>
+        <div><span class="text-fips-muted">B→A</span> ReceiverReport at T2 = 1030</div>
+        <div class="pl-4">timestamp_echo=1000, dwell_time=18</div>
+        <div><span class="text-fips-muted">A receives at</span> T3 = 1024 (A's clock)</div>
+        <div>
+          <span class="text-fips-accent">RTT sample</span> = (T3 − timestamp_echo) − dwell_time = (1024
+          − 1000) − 18 = 6ms
+        </div>
+      </div>
+
+      <p>
+        The spin bit is the other well-known RTT primitive (QUIC uses it). FIPS implements the
+        TX-side reflection state machine, but RTT samples from the spin bit itself are <span
+          class="text-fips-text">discarded</span
+        >. In a mesh where frames are driven by separate timers (tree announces, bloom filters, MMP
+        reports), inter-frame processing delays inflate spin-bit RTT unpredictably. Timestamp-echo
+        is left as the sole source of SRTT.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">From metrics to link cost</h2>
+
+      <p>The spanning tree uses one scalar summary of link quality:</p>
+
+      <pre
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 text-sm font-mono text-fips-text overflow-x-auto"><code>link_cost = ETX × (1 + SRTT_ms / 100)
+effective_depth = peer.depth + link_cost</code></pre>
+
+      <p>
+        ETX covers loss. The SRTT term keeps ETX from treating a clean-but-slow link (think LoRa at
+        500ms RTT, 0% loss) the same as fiber. Each node picks the parent with the lowest effective
+        depth, with hysteresis: a new candidate has to beat the current parent by at least
+        <code class="mono">parent_hysteresis</code> (default 20%) before the parent actually switches.
+        That stops pointless flapping when two peers are within noise of each other.
+      </p>
+
+      <p>
+        One caveat from the spec: <code class="mono">link_cost</code> is used only in parent selection
+        so far. Data forwarding via
+        <code class="mono">find_next_hop()</code> still ranks candidates by tree distance first. Link
+        cost is already measured and already on the wire, but the forwarder has not yet been wired up
+        to use it as a primary key.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Try it: pick a parent</h2>
+
+      <p>
+        The control below shows two candidate parents. Move the sliders to explore how ETX and SRTT
+        interact, and see when the spanning tree would actually switch. The default scenario is
+        fiber versus long-range radio, with radio one hop closer to the root; you can see why depth
+        alone is not enough.
+      </p>
+
+      <LinkCostLab client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">ECN: pushing congestion back to the source</h2>
+
+      <p>
+        The <code class="mono">CE</code> flag in the FMP flags byte is hop-by-hop congestion feedback.
+        Transit nodes set CE on a forwarded packet when any of three conditions trip:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          Outgoing link MMP loss rate at or above
+          <code class="mono">node.ecn.loss_threshold</code> (default 5%).
+        </li>
+        <li>
+          Outgoing link ETX at or above
+          <code class="mono">node.ecn.etx_threshold</code> (default 3.0).
+        </li>
+        <li>
+          Kernel receive buffer drops detected on any local UDP socket (<code class="mono"
+            >SO_RXQ_OVFL</code
+          >).
+        </li>
+      </ul>
+
+      <p>
+        Once CE is set, it stays set for every subsequent hop. At the final destination, the IPv6
+        adapter marks the Traffic Class ECN bits to
+        <code class="mono">CE (0b11)</code> before handing the packet to the TUN, but only if the packet
+        was already ECN-capable (<code class="mono">ECT(0)</code> or <code class="mono">ECT(1)</code
+        >). Not-ECT packets are never marked, per RFC 3168. The guest TCP stack then echoes ECE in
+        its ACKs, and standard TCP congestion control shrinks the window. The mesh gets end-to-end
+        congestion response without having to speak TCP anywhere in its own stack.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">What ends up in the operator log</h2>
+
+      <p>With default settings MMP emits one info-level line per link every 30 seconds:</p>
+
+      <pre
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 text-xs font-mono text-fips-text overflow-x-auto"><code>MMP link metrics peer=node-b rtt=2.3ms loss=0.2% jitter=0.1ms goodput=76.0MB/s tx_pkts=1234 rx_pkts=5678</code></pre>
+
+      <p>
+        Teardown emits a final summary with SRTT, loss rate, jitter, ETX, goodput, and the
+        cumulative tx and rx counters. Between those two, everything else is available live from
+        <code class="mono">fipsctl show routing</code>.
+      </p>
+    </section>
+
+    <Quiz client:visible questions={getQuiz("10-mmp")} title="Lesson quiz" />
+
+    <SeeAlso terms={["mmp", "fmp", "spanning-tree", "coordinate", "bloom-filter"]} />
+    <LessonNav current={10} />
+  </article>
+</Base>

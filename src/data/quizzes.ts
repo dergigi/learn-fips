@@ -413,4 +413,74 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "CP (Coordinates Piggyback) is a flag in the FSP common prefix. When it is clear, the ciphertext starts right after the 12-byte header.",
     },
   ],
+  "10-mmp": [
+    {
+      question: "In full mode, what two MMP messages does each peer link exchange?",
+      options: [
+        "SenderReport and ReceiverReport.",
+        "PING and PONG.",
+        "Only ReceiverReport; SenderReport is reserved.",
+        "CoordsRequired and PathBroken.",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Full mode runs both reports. Lightweight mode drops SenderReport (no RTT). Minimal mode drops both and relies on spin bit + CE.",
+    },
+    {
+      question: "What does MMP actually use to compute SRTT?",
+      options: [
+        "Spin-bit reflection timing on regular data frames.",
+        "Kernel-reported socket RTT.",
+        "The timestamp_echo and dwell_time fields in ReceiverReport.",
+        "A three-way handshake at session start.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "The sender stamps each frame with a timestamp. The receiver echoes it along with its dwell time. The sender subtracts dwell from the observed delay and feeds the sample into the SRTT EWMA.",
+    },
+    {
+      question:
+        "Why does FIPS implement the spin bit's reflection state machine but discard its RTT samples?",
+      options: [
+        "The spin bit is encrypted and unreadable.",
+        "Inter-frame processing delays (timers for announces, bloom filters, MMP) inflate spin-bit RTT unpredictably.",
+        "Spin-bit RTT duplicates ICMP echo.",
+        "The TX side is not implemented yet.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Frames on a peer link are not driven by the data stream alone. Announces, bloom-filter gossip, and MMP itself add jitter that shows up as spin-bit RTT noise. The reflection is kept so external observers still work, but timestamp-echo is the only internal RTT source.",
+    },
+    {
+      question: "A peer has ETX = 2.0 and SRTT = 50ms. What is its link_cost?",
+      options: ["1.0", "2.5", "3.0", "4.0"],
+      correctIndex: 2,
+      explanation: "link_cost = ETX × (1 + SRTT_ms / 100) = 2.0 × (1 + 0.5) = 3.0.",
+    },
+    {
+      question: "What does parent_hysteresis (default 0.2) protect against?",
+      options: [
+        "Loss rates above 20%.",
+        "Peers going offline.",
+        "Oscillation between two parents whose link costs are within noise of each other.",
+        "Bloom filter false positives.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "A new candidate must improve effective_depth by at least 20% over the current parent before the switch happens. Two peers with nearly equal costs will not trigger a flap.",
+    },
+    {
+      question:
+        "When a transit node sets the CE flag, what eventually makes a guest TCP stack slow down?",
+      options: [
+        "The mesh layer opens a TCP RST back to the sender.",
+        "The IPv6 adapter marks the TCP segment's ECN bits CE; the receiver echoes ECE; the sender's TCP cuts its window.",
+        "MMP sends a control message to the guest kernel.",
+        "The FSP session is torn down and reopened.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "CE is sticky across hops. At the final destination the IPv6 adapter writes CE into the Traffic Class ECN bits (only if the inner packet was ECT-capable). Standard TCP ECN then takes over end to end.",
+    },
+  ],
 };

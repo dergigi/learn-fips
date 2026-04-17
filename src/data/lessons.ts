@@ -65,4 +65,10 @@ export const lessons: Lesson[] = [
     description:
       "The byte-level layout of a FIPS packet, layer by layer. Toggle fields and watch the overhead change.",
   },
+  {
+    slug: "10-mmp",
+    number: 10,
+    title: "Measuring the Mesh",
+    description: "MMP, link cost, and how per-link RTT and loss push traffic onto better parents.",
+  },
 ];
