@@ -397,6 +397,44 @@ function buildMtuExceeded(): Frame[] {
     link: { from: 0, to: 1, packet: { kind: "data", cp: false } },
   });
 
+  frames.push({
+    activeNode: 1,
+    routers,
+    cpRemaining: 0,
+    title: "R1 forwards the smaller packet",
+    detail:
+      "Nothing about R1's decision has changed. It still picks R2 as next hop, exactly as it would have before.",
+    link: { from: 1, to: 2, packet: { kind: "data", cp: false } },
+  });
+
+  frames.push({
+    activeNode: 2,
+    routers,
+    cpRemaining: 0,
+    title: "R2 fits the packet onto its link to R3",
+    detail:
+      "Same router, same link, same MTU. This time the packet is small enough, so R2 forwards normally. The bottleneck never moved; the source just stopped overrunning it.",
+    link: { from: 2, to: 3, packet: { kind: "data", cp: false } },
+  });
+
+  frames.push({
+    activeNode: 3,
+    routers,
+    cpRemaining: 0,
+    title: "R3 relays to Dst",
+    detail: "R3's cache is warm, R3's link to Dst is fine. Ordinary forward.",
+    link: { from: 3, to: 4, packet: { kind: "data", cp: false } },
+  });
+
+  frames.push({
+    activeNode: 4,
+    routers,
+    cpRemaining: 0,
+    title: "Dst receives the packet",
+    detail:
+      "End-to-end delivery is restored without re-keying, re-discovering coordinates, or touching the spanning tree. FSP will keep using the clamped path_mtu until a future LookupResponse or SessionDatagram advertises a larger value.",
+  });
+
   return frames;
 }
 
