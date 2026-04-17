@@ -85,4 +85,10 @@ export const lessons: Lesson[] = [
     description:
       "The IPv6 adapter, the fips-gateway NAT sidecar, and how unmodified SSH or curl end up speaking to a mesh peer.",
   },
+  {
+    slug: "13-try-it",
+    number: 13,
+    title: "Try It",
+    description: "Install a node, join the public test mesh, and send your first packet across it.",
+  },
 ];
