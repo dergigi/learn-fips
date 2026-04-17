@@ -4,7 +4,8 @@
  * The human list is pulled from
  * https://github.com/jmcorgan/fips/graphs/contributors. The project
  * account comes first since it is the single most useful follow for
- * anyone new to FIPS; contributors follow, roughly by commit count.
+ * anyone new to FIPS. Named roles (Author, Initiator, Spirit) come
+ * next, then the remaining code contributors roughly by commit count.
  *
  * When a contributor's `npub` is set, the card renders as a Nostr link
  * via njump.to. When it is not, the card falls back to the GitHub
@@ -71,6 +72,17 @@ export const contributors: Contributor[] = [
     npub: "npub19wavu4f7l6l43h24jyskn7fvzy37kcfp67aqjtmv2qgy4lp34nhsda8p6k",
   },
   {
+    github: "Origami74",
+    name: "Arjen",
+    role: "Initiator",
+    npub: "npub1hw6amg8p24ne08c9gdq8hhpqx0t0pwanpae9z25crn7m9uy7yarse465gr",
+  },
+  {
+    name: "c03rad0r",
+    role: "Spirit",
+    npub: "npub1c03rad0r6q833vh57kyd3ndu2jry30nkr0wepqfpsm05vq7he25slryrnw",
+  },
+  {
     github: "alexxie16",
     name: "Alex Xie",
     npub: "npub1q4hnxfzu5nxylg7p6mj40hvw4ec53z0ncdpre0t0huyl8s8zqrfquvz7zr",
@@ -91,12 +103,6 @@ export const contributors: Contributor[] = [
     npub: "npub1zthq85gksjsjthv8h6rec2qeqs2mu0emrm9xknkhgw7hfl7csrnq6wxm56",
   },
   {
-    github: "Origami74",
-    name: "Arjen",
-    role: "Initiator",
-    npub: "npub1hw6amg8p24ne08c9gdq8hhpqx0t0pwanpae9z25crn7m9uy7yarse465gr",
-  },
-  {
     github: "sh1ftred",
     name: "red",
     npub: "npub1ftt05tgku25m2akgvw6v7aqy5ux5mseqcrzy05g26ml43xf74nyqsredsh",
@@ -105,10 +111,5 @@ export const contributors: Contributor[] = [
     github: "0ceanSlim",
     name: "OceanSlim",
     npub: "npub1zmc6qyqdfnllhnzzxr5wpepfpnzcf8q6m3jdveflmgruqvd3qa9sjv7f60",
-  },
-  {
-    name: "c03rad0r",
-    role: "Spirit",
-    npub: "npub1c03rad0r6q833vh57kyd3ndu2jry30nkr0wepqfpsm05vq7he25slryrnw",
   },
 ];
