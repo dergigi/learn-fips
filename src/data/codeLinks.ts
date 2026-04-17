@@ -124,4 +124,47 @@ export const codeLinks: CodeLink[] = [
     url: fipsSearch("link_cost"),
     label: "link_cost across the fips repo (GitHub code search)",
   },
+  {
+    symbol: "parent_hysteresis",
+    url: fipsSearch("parent_hysteresis"),
+    label: "parent_hysteresis across the fips repo (GitHub code search)",
+  },
+  // Types and identifiers that live in many places.
+  {
+    symbol: "NodeAddr",
+    url: fipsSearch("NodeAddr"),
+    label: "NodeAddr across the fips repo (GitHub code search)",
+  },
+  {
+    symbol: "node_addr",
+    url: fipsSearch("node_addr"),
+    label: "node_addr across the fips repo (GitHub code search)",
+  },
+  // Message types (FMP / FSP).
+  {
+    symbol: "FilterAnnounce",
+    url: fipsSearch("FilterAnnounce"),
+    label: "FilterAnnounce across the fips repo (GitHub code search)",
+  },
+  {
+    symbol: "CoordsWarmup",
+    url: fipsSearch("CoordsWarmup"),
+    label: "CoordsWarmup across the fips repo (GitHub code search)",
+  },
+  // Error-signal variants (FSP).
+  {
+    symbol: "CoordsRequired",
+    url: fipsSearch("CoordsRequired"),
+    label: "CoordsRequired across the fips repo (GitHub code search)",
+  },
+  {
+    symbol: "PathBroken",
+    url: fipsSearch("PathBroken"),
+    label: "PathBroken across the fips repo (GitHub code search)",
+  },
+  {
+    symbol: "MtuExceeded",
+    url: fipsSearch("MtuExceeded"),
+    label: "MtuExceeded across the fips repo (GitHub code search)",
+  },
 ];
