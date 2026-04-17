@@ -94,5 +94,6 @@ export const contributors: Contributor[] = [
   {
     github: "Origami74",
     name: "Arjen",
+    npub: "npub1hw6amg8p24ne08c9gdq8hhpqx0t0pwanpae9z25crn7m9uy7yarse465gr",
   },
 ];
