@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import MeshSimulator from "../../components/MeshSimulator";
 import BloomFilterViz from "../../components/BloomFilterViz";
 import RoutingDemo from "../../components/RoutingDemo";
@@ -137,6 +138,7 @@ import { getQuiz } from "../../data/quizzes";
 
     <Quiz client:visible questions={getQuiz("5-spanning-tree")} title="Routing Quiz" />
 
+    <SeeAlso terms={["spanning-tree", "coordinate", "node_addr", "bloom-filter"]} />
     <LessonNav current={5} />
   </article>
 </Base>

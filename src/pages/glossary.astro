@@ -1,0 +1,74 @@
+---
+import Base from "../layouts/Base.astro";
+import { glossary } from "../data/glossary";
+import { lessons } from "../data/lessons";
+
+const sorted = [...glossary].sort((a, b) => a.term.localeCompare(b.term));
+const lessonBySlug = new Map(lessons.map((l) => [l.number, l]));
+---
+
+<Base
+  title="Glossary"
+  description="Short, stable definitions of the FIPS vocabulary used throughout the lessons."
+>
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Reference</p>
+    <h1 class="text-3xl font-bold mb-4">Glossary</h1>
+    <p class="text-fips-muted mb-8">
+      Short, stable definitions of the vocabulary used throughout the lessons. Every lesson links
+      here; feel free to use it as a lookup while you read.
+    </p>
+
+    <nav
+      aria-label="Glossary index"
+      class="mb-8 rounded-lg border border-fips-border bg-fips-surface/30 p-4"
+    >
+      <p class="text-xs text-fips-muted mb-2 font-mono uppercase tracking-wide">Jump to</p>
+      <ul class="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        {
+          sorted.map((t) => (
+            <li>
+              <a href={`#${t.id}`} class="text-fips-accent hover:underline font-mono">
+                {t.term}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <dl class="space-y-8">
+      {
+        sorted.map((t) => (
+          <div id={t.id} class="scroll-mt-24">
+            <dt class="flex flex-wrap items-baseline gap-2 mb-2">
+              <span class="text-xl font-semibold">{t.term}</span>
+              {t.expansion && (
+                <span class="text-sm text-fips-muted font-mono">— {t.expansion}</span>
+              )}
+            </dt>
+            <dd class="text-fips-text mb-2">{t.summary}</dd>
+            <dd class="text-sm text-fips-muted mb-2">{t.detail}</dd>
+            {t.lessons && t.lessons.length > 0 && (
+              <dd class="text-xs text-fips-muted">
+                <span class="font-mono uppercase tracking-wide">Appears in:</span>{" "}
+                {t.lessons.map((n, i) => {
+                  const l = lessonBySlug.get(n);
+                  if (!l) return null;
+                  return (
+                    <span>
+                      <a href={`/lessons/${l.slug}`} class="text-fips-accent hover:underline">
+                        Lesson {n}
+                      </a>
+                      {i < t.lessons!.length - 1 ? ", " : ""}
+                    </span>
+                  );
+                })}
+              </dd>
+            )}
+          </div>
+        ))
+      }
+    </dl>
+  </article>
+</Base>

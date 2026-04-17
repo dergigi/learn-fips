@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
 ---
@@ -217,6 +218,9 @@ import { getQuiz } from "../../data/quizzes";
 
     <Quiz client:visible questions={getQuiz("7-putting-it-together")} title="Final Quiz" />
 
+    <SeeAlso
+      terms={["fips", "fmp", "fsp", "spanning-tree", "coordinate", "noise-ik", "noise-xk"]}
+    />
     <LessonNav current={7} />
   </article>
 </Base>

@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import TransportGrid from "../../components/TransportGrid";
 ---
 
@@ -87,6 +88,7 @@ import TransportGrid from "../../components/TransportGrid";
       </div>
     </section>
 
+    <SeeAlso terms={["transport", "fmp"]} />
     <LessonNav current={4} />
   </article>
 </Base>

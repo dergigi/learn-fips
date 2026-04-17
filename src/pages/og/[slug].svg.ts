@@ -21,6 +21,12 @@ const cards: Card[] = [
     title: l.title,
     subtitle: l.description,
   })),
+  {
+    slug: "glossary",
+    eyebrow: "Reference",
+    title: "Glossary",
+    subtitle: "Short, stable definitions of the FIPS vocabulary used throughout the lessons.",
+  },
 ];
 
 function escape(s: string): string {

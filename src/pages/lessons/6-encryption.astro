@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import PacketJourney from "../../components/PacketJourney";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
@@ -138,6 +139,7 @@ import { getQuiz } from "../../data/quizzes";
 
     <Quiz client:visible questions={getQuiz("6-encryption")} title="Encryption Quiz" />
 
+    <SeeAlso terms={["noise-ik", "noise-xk", "fmp", "fsp"]} />
     <LessonNav current={6} />
   </article>
 </Base>

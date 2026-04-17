@@ -17,7 +17,9 @@ const currentPath = Astro.url.pathname;
 const site = Astro.site ?? new URL("https://learn-fips.vercel.app");
 const canonical = new URL(currentPath, site).toString();
 const lessonSlug = currentPath.match(/\/lessons\/([^/]+)/)?.[1];
-const resolvedOgImage = ogImage ?? `/og/${lessonSlug ?? "default"}.svg`;
+const isGlossary = currentPath.startsWith("/glossary");
+const ogSlug = lessonSlug ?? (isGlossary ? "glossary" : "default");
+const resolvedOgImage = ogImage ?? `/og/${ogSlug}.svg`;
 const ogImageUrl = new URL(resolvedOgImage, site).toString();
 const fullTitle = `${title} | Learn FIPS`;
 ---
@@ -78,6 +80,17 @@ const fullTitle = `${title} | Learn FIPS`;
         </div>
         <div class="flex items-center gap-3">
           <a
+            href="/glossary"
+            class:list={[
+              "text-sm transition-colors hidden sm:inline",
+              currentPath.startsWith("/glossary")
+                ? "text-fips-accent"
+                : "text-fips-muted hover:text-fips-text",
+            ]}
+          >
+            Glossary
+          </a>
+          <a
             href="https://github.com/dergigi/learn-fips"
             target="_blank"
             rel="noopener"
@@ -134,6 +147,17 @@ const fullTitle = `${title} | Learn FIPS`;
               );
             })
           }
+          <a
+            href="/glossary"
+            class:list={[
+              "col-span-2 px-3 py-2 rounded text-sm transition-colors border-t border-fips-border mt-1 pt-2",
+              currentPath.startsWith("/glossary")
+                ? "text-fips-accent bg-fips-accent/10"
+                : "text-fips-muted hover:text-fips-text",
+            ]}
+          >
+            <span class="font-mono text-xs mr-1">§</span> Glossary
+          </a>
         </div>
       </div>
     </nav>

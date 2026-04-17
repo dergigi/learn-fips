@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import ProtocolStack from "../../components/ProtocolStack";
 import {
   FIPS_BASE_OVERHEAD,
@@ -129,6 +130,7 @@ import {
       </p>
     </section>
 
+    <SeeAlso terms={["fmp", "fsp", "mmp"]} />
     <LessonNav current={3} />
   </article>
 </Base>

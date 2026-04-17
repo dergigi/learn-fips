@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 import IdentityGenerator from "../../components/IdentityGenerator";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
@@ -140,6 +141,7 @@ import { NODE_ADDR_BYTES, PUBKEY_BYTES } from "../../lib/constants";
 
     <Quiz client:visible questions={getQuiz("2-identity")} title="Identity Quiz" />
 
+    <SeeAlso terms={["npub", "node_addr", "ipv6-ula"]} />
     <LessonNav current={2} />
   </article>
 </Base>

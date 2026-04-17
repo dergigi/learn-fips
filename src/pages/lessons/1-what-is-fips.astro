@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
 ---
 
 <Base title="What is FIPS?">
@@ -151,6 +152,7 @@ import LessonNav from "../../components/LessonNav.astro";
       </p>
     </section>
 
+    <SeeAlso terms={["fips", "node_addr", "transport"]} />
     <LessonNav current={1} />
   </article>
 </Base>
