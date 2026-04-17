@@ -187,6 +187,7 @@ const fullTitle = `${title} | Learn FIPS`;
 
     <script>
       import { markVisited } from "../lib/progress";
+      import { decorateAcronyms } from "../lib/acronyms";
 
       function wireMobileMenu() {
         const btn = document.getElementById("mobile-menu-btn");
@@ -201,6 +202,7 @@ const fullTitle = `${title} | Learn FIPS`;
 
       function onPageLoad() {
         wireMobileMenu();
+        decorateAcronyms();
         // Mark the current lesson as visited in the shared progress store.
         const slug = window.location.pathname.match(/\/lessons\/([^/]+)/)?.[1];
         if (slug) markVisited(slug);

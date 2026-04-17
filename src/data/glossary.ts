@@ -13,6 +13,12 @@ export interface GlossaryTerm {
   lessons?: number[];
   /** Tags for grouping / filtering. */
   tags?: string[];
+  /**
+   * Literal strings that, when found in lesson prose, should be auto-decorated
+   * with a glossary tooltip + link. Case-sensitive, whole-word match. Longer
+   * strings win when they overlap (e.g. "Noise IK" before "IK").
+   */
+  acronyms?: string[];
 }
 
 export const glossary: GlossaryTerm[] = [
@@ -35,6 +41,7 @@ export const glossary: GlossaryTerm[] = [
       "FMP runs between directly connected peers. It carries the routing envelope (source/destination node_addrs, TTL, path MTU) in a form that transit nodes can read, and re-encrypts every packet for the next link under a fresh Noise IK session.",
     lessons: [3, 5, 6],
     tags: ["layer", "encryption"],
+    acronyms: ["FMP"],
   },
   {
     id: "fsp",
@@ -46,6 +53,7 @@ export const glossary: GlossaryTerm[] = [
       "FSP survives all intermediate link encryptions and re-encryptions intact. Transit routers can see the FMP routing envelope but cannot read the FSP payload. Noise XK hides the initiator's static key until the third handshake message.",
     lessons: [3, 6, 7],
     tags: ["layer", "encryption"],
+    acronyms: ["FSP"],
   },
   {
     id: "mmp",
@@ -56,6 +64,7 @@ export const glossary: GlossaryTerm[] = [
       "MMP runs per peer link in three modes (full, lightweight, minimal). It tracks SRTT, loss, jitter, goodput, OWD trend, and ETX, emits periodic SenderReports and ReceiverReports, and exposes a single link_cost that the spanning tree uses for parent selection.",
     lessons: [5, 7, 10],
     tags: ["layer"],
+    acronyms: ["MMP"],
   },
   {
     id: "etx",
@@ -66,6 +75,7 @@ export const glossary: GlossaryTerm[] = [
       "MMP derives ETX from bidirectional delivery ratios observed over the reporting interval. It is the loss half of link cost: a link with 20% loss in each direction has ETX near 1.56, meaning the mesh effectively has to transmit roughly 1.56 times per successful delivery.",
     lessons: [10],
     tags: ["routing", "layer"],
+    acronyms: ["ETX"],
   },
   {
     id: "link-cost",
@@ -95,6 +105,7 @@ export const glossary: GlossaryTerm[] = [
       "CE is sticky: once set along a path, every downstream hop leaves it set. At the IPv6 adapter, CE-marked FSP packets get CE written into the Traffic Class ECN bits (only if the inner packet was ECT-capable), so guest TCP stacks cut their window without the mesh ever parsing TCP.",
     lessons: [10],
     tags: ["layer", "routing"],
+    acronyms: ["ECN"],
   },
   {
     id: "node_addr",
@@ -155,6 +166,7 @@ export const glossary: GlossaryTerm[] = [
       "IK means the Initiator already Knows the responder's static key from configuration. The initiator transmits their static key in message one, encrypted under a shared key derived from ephemeral keys. Fast, which matters for link setup.",
     lessons: [6],
     tags: ["encryption"],
+    acronyms: ["Noise IK", "IK"],
   },
   {
     id: "noise-xk",
@@ -165,6 +177,7 @@ export const glossary: GlossaryTerm[] = [
       "XK delays transmitting the initiator's static key until message three, where it is encrypted under the full shared secret. Transit routers cannot correlate the initiator's identity from an observed handshake, which matters because session traffic traverses untrusted intermediate nodes.",
     lessons: [6],
     tags: ["encryption"],
+    acronyms: ["Noise XK", "XK"],
   },
   {
     id: "ipv6-ula",
@@ -175,6 +188,7 @@ export const glossary: GlossaryTerm[] = [
       "FIPS derives a per-node IPv6 address by prepending 0xfd to the first 15 bytes of the node_addr. The result sits in fd00::/8, which never collides with public IPv6 routing, and lets unmodified IPv6 software speak into the mesh via a TUN adapter.",
     lessons: [2, 7, 12],
     tags: ["identity", "compatibility"],
+    acronyms: ["ULA"],
   },
   {
     id: "transport",
@@ -204,6 +218,7 @@ export const glossary: GlossaryTerm[] = [
       "The first five data packets of a session, plus any packet sent after CoordsRequired or PathBroken, set the CP flag and include coordinates between the FSP header and the AEAD ciphertext. Transit nodes parse them without decrypting the payload. The same format is used by the standalone CoordsWarmup (0x14) message.",
     lessons: [8],
     tags: ["routing", "session"],
+    acronyms: ["CP flag", "CP"],
   },
   {
     id: "error-signals",
@@ -223,6 +238,7 @@ export const glossary: GlossaryTerm[] = [
       "SessionDatagram and LookupResponse both carry a path_mtu field that tracks the minimum link MTU seen along the forward path. The mesh layer never fragments. If a packet still exceeds the next-hop MTU at some transit node, that node emits MtuExceeded and FSP clamps its estimate accordingly.",
     lessons: [8],
     tags: ["routing"],
+    acronyms: ["MTU"],
   },
   {
     id: "sybil",
@@ -260,6 +276,7 @@ export const glossary: GlossaryTerm[] = [
       "fips0 is a TUN device the adapter creates on startup. The kernel routes every fd00::/8 packet through it. The adapter's reader thread picks up outbound IPv6 packets; its writer thread hands inbound mesh traffic back to the kernel as complete IPv6 datagrams. TUN creation needs CAP_NET_ADMIN.",
     lessons: [12],
     tags: ["compatibility"],
+    acronyms: ["TUN"],
   },
   {
     id: "identity-cache",

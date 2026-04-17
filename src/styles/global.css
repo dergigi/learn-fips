@@ -79,6 +79,62 @@ article li a {
   text-underline-offset: 0.125em;
 }
 
+/*
+ * Auto-decorated acronyms (see src/lib/acronyms.ts). A dotted underline
+ * hints that the term explains itself on hover; on touch devices the
+ * link still works as a plain jump to the glossary entry.
+ */
+.acronym {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--color-fips-muted);
+  cursor: help;
+  position: relative;
+}
+
+.acronym:hover,
+.acronym:focus-visible {
+  color: var(--color-fips-accent);
+  border-bottom-color: var(--color-fips-accent);
+}
+
+.acronym::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background-color: var(--color-fips-bg);
+  color: var(--color-fips-text);
+  border: 1px solid var(--color-fips-border);
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  border-radius: 4px;
+  white-space: normal;
+  max-width: 18rem;
+  width: max-content;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  z-index: 30;
+}
+
+.acronym:hover::after,
+.acronym:focus-visible::after {
+  opacity: 1;
+}
+
+/* Touch devices have no real hover; let the link act as a plain jump. */
+@media (hover: none) {
+  .acronym::after {
+    display: none !important;
+  }
+  .acronym {
+    cursor: pointer;
+  }
+}
+
 /* Interactive component containers - horizontal scroll on small screens */
 @media (max-width: 640px) {
   canvas {
