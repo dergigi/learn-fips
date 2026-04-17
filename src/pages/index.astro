@@ -26,15 +26,25 @@ import { lessons } from "../data/lessons";
   </section>
 
   <section class="max-w-3xl mx-auto px-4 py-16">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
       <h2 class="text-lg font-semibold">Lessons</h2>
-      <span id="progress-text" class="text-fips-muted text-sm font-mono"></span>
+      <div class="flex items-center gap-3">
+        <span id="progress-text" class="text-fips-muted text-sm font-mono"></span>
+        <button
+          id="reset-progress-btn"
+          type="button"
+          class="hidden text-xs font-mono text-fips-muted hover:text-fips-red transition-colors border border-fips-border hover:border-fips-red/40 rounded px-2 py-1"
+        >
+          Reset progress
+        </button>
+      </div>
     </div>
     <div class="grid gap-4">
       {
         lessons.map((lesson) => (
           <a
             href={`/lessons/${lesson.slug}`}
+            data-slug={lesson.slug}
             data-lesson={lesson.number}
             class="lesson-card group flex items-start gap-4 p-4 rounded-lg border border-fips-border bg-fips-surface/50 hover:border-fips-accent/40 transition-colors"
           >
@@ -42,9 +52,12 @@ import { lessons } from "../data/lessons";
               {lesson.number}
             </span>
             <div class="flex-1">
-              <h3 class="font-semibold group-hover:text-fips-accent transition-colors">
-                {lesson.title}
-              </h3>
+              <div class="flex items-baseline justify-between gap-2 flex-wrap">
+                <h3 class="font-semibold group-hover:text-fips-accent transition-colors">
+                  {lesson.title}
+                </h3>
+                <span class="lesson-status text-xs font-mono text-fips-muted" />
+              </div>
               <p class="text-fips-muted text-sm mt-1">{lesson.description}</p>
             </div>
           </a>
@@ -54,22 +67,90 @@ import { lessons } from "../data/lessons";
   </section>
 
   <script>
-    const visited: number[] = JSON.parse(localStorage.getItem("fips-visited") || "[]");
-    const total = document.querySelectorAll<HTMLElement>(".lesson-card").length;
-    const progressText = document.getElementById("progress-text");
-    if (progressText) {
-      progressText.textContent = `${visited.length}/${total} visited`;
-    }
+    import {
+      loadProgress,
+      resetProgress,
+      isVisited,
+      isPassed,
+      isCompleted,
+      LESSONS_WITH_QUIZ,
+    } from "../lib/progress";
+
+    const lessonSlugByNumber = new Map<number, string>();
     document.querySelectorAll<HTMLElement>(".lesson-card").forEach((card) => {
-      const num = parseInt(card.dataset.lesson || "0", 10);
-      if (visited.includes(num)) {
+      const n = Number(card.dataset.lesson);
+      const slug = card.dataset.slug;
+      if (n && slug) lessonSlugByNumber.set(n, slug);
+    });
+
+    function render() {
+      const p = loadProgress(lessonSlugByNumber);
+      const cards = document.querySelectorAll<HTMLElement>(".lesson-card");
+      const total = cards.length;
+      let completed = 0;
+      let anyProgress = false;
+
+      cards.forEach((card) => {
+        const slug = card.dataset.slug ?? "";
         const badge = card.querySelector(".lesson-badge");
+        const status = card.querySelector<HTMLElement>(".lesson-status");
+        const visited = isVisited(p, slug);
+        const passed = isPassed(p, slug);
+        const done = isCompleted(p, slug);
+        if (visited) anyProgress = true;
+        if (done) completed++;
+
         if (badge) {
-          badge.classList.remove("bg-fips-accent/10", "text-fips-accent");
-          badge.classList.add("bg-fips-green/20", "text-fips-green");
-          badge.textContent = "✓";
+          badge.classList.remove(
+            "bg-fips-accent/10",
+            "text-fips-accent",
+            "bg-fips-green/20",
+            "text-fips-green",
+            "bg-fips-muted/10",
+            "text-fips-muted"
+          );
+          if (done) {
+            badge.classList.add("bg-fips-green/20", "text-fips-green");
+            badge.textContent = "✓";
+          } else if (visited) {
+            badge.classList.add("bg-fips-muted/10", "text-fips-muted");
+            badge.textContent = card.dataset.lesson || "";
+          } else {
+            badge.classList.add("bg-fips-accent/10", "text-fips-accent");
+            badge.textContent = card.dataset.lesson || "";
+          }
         }
-      }
+
+        if (status) {
+          if (done) {
+            status.textContent = "Completed";
+            status.className = "lesson-status text-xs font-mono text-fips-green";
+          } else if (passed) {
+            status.textContent = "Quiz passed";
+            status.className = "lesson-status text-xs font-mono text-fips-green";
+          } else if (visited) {
+            status.textContent = LESSONS_WITH_QUIZ.has(slug) ? "In progress" : "Visited";
+            status.className = "lesson-status text-xs font-mono text-fips-muted";
+          } else {
+            status.textContent = "";
+            status.className = "lesson-status text-xs font-mono text-fips-muted";
+          }
+        }
+      });
+
+      const progressText = document.getElementById("progress-text");
+      if (progressText) progressText.textContent = `${completed}/${total} completed`;
+
+      const resetBtn = document.getElementById("reset-progress-btn");
+      if (resetBtn) resetBtn.classList.toggle("hidden", !anyProgress);
+    }
+
+    render();
+
+    document.getElementById("reset-progress-btn")?.addEventListener("click", () => {
+      if (!confirm("Reset all lesson progress and quiz attempts?")) return;
+      resetProgress();
+      render();
     });
   </script>
 </Base>

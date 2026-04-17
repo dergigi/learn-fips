@@ -183,6 +183,8 @@ const fullTitle = `${title} | Learn FIPS`;
     </footer>
 
     <script>
+      import { markVisited } from "../lib/progress";
+
       const btn = document.getElementById("mobile-menu-btn");
       const menu = document.getElementById("mobile-menu");
       btn?.addEventListener("click", () => {
@@ -190,17 +192,9 @@ const fullTitle = `${title} | Learn FIPS`;
         btn.setAttribute("aria-expanded", String(open));
       });
 
-      // Mark current lesson as visited in localStorage
-      const path = window.location.pathname;
-      const match = path.match(/\/lessons\/(\d+)-/);
-      if (match && match[1]) {
-        const visited = JSON.parse(localStorage.getItem("fips-visited") || "[]");
-        const num = parseInt(match[1], 10);
-        if (!visited.includes(num)) {
-          visited.push(num);
-          localStorage.setItem("fips-visited", JSON.stringify(visited));
-        }
-      }
+      // Mark the current lesson as visited in the shared progress store.
+      const slug = window.location.pathname.match(/\/lessons\/([^/]+)/)?.[1];
+      if (slug) markVisited(slug);
     </script>
   </body>
 </html>
