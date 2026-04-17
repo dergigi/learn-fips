@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+
+const STEP_DURATION_MS = 1800;
 
 interface JourneyStep {
   title: string;
@@ -112,22 +114,32 @@ export default function PacketJourney() {
   const [stepIdx, setStepIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const reduceMotion = useReducedMotion();
+  const timer = useRef<number | null>(null);
 
   const step = steps[stepIdx]!;
 
+  useEffect(() => {
+    return () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+    };
+  }, []);
+
   function play() {
+    if (playing) return;
     setPlaying(true);
     setStepIdx(0);
     let i = 0;
-    const interval = setInterval(() => {
+    const tick = () => {
       i++;
       if (i >= steps.length) {
-        clearInterval(interval);
         setPlaying(false);
+        timer.current = null;
         return;
       }
       setStepIdx(i);
-    }, 2000);
+      timer.current = window.setTimeout(tick, STEP_DURATION_MS);
+    };
+    timer.current = window.setTimeout(tick, 400);
   }
 
   return (

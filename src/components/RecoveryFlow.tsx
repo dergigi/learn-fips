@@ -51,6 +51,7 @@ interface Frame {
 type ScenarioId = "coords-required" | "path-broken" | "mtu-exceeded";
 
 const N_WARMUP = 5;
+const FRAME_DURATION_MS = 1600;
 
 const scenarios: Record<ScenarioId, { title: string; summary: string; frames: Frame[] }> = {
   "coords-required": {
@@ -476,8 +477,8 @@ export default function RecoveryFlow() {
   const play = () => {
     if (playing) return;
     setPlaying(true);
-    let i = 0;
     setFrameIdx(0);
+    let i = 0;
     const step = () => {
       i += 1;
       if (i >= frames.length) {
@@ -486,9 +487,9 @@ export default function RecoveryFlow() {
         return;
       }
       setFrameIdx(i);
-      timer.current = window.setTimeout(step, reduceMotion ? 0 : 1800);
+      timer.current = window.setTimeout(step, FRAME_DURATION_MS);
     };
-    timer.current = window.setTimeout(step, reduceMotion ? 0 : 1500);
+    timer.current = window.setTimeout(step, 400);
   };
 
   const reset = () => {
