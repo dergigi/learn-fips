@@ -67,6 +67,18 @@ article h2 {
   scroll-margin-top: 4rem;
 }
 
+/*
+ * Inline prose links inside <article> need a non-color differentiator
+ * (axe "link-in-text-block" / Lighthouse "links rely on color to be
+ * distinguishable"). Underlining text-color links inside paragraphs
+ * and list items fixes that without styling every nav/card link.
+ */
+article p a,
+article li a {
+  text-decoration: underline;
+  text-underline-offset: 0.125em;
+}
+
 /* Interactive component containers - horizontal scroll on small screens */
 @media (max-width: 640px) {
   canvas {
