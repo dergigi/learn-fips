@@ -2,6 +2,12 @@
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import ProtocolStack from "../../components/ProtocolStack";
+import {
+  FIPS_BASE_OVERHEAD,
+  FIPS_IPV6_HEADER_SAVINGS,
+  FIPS_IPV6_OVERHEAD,
+  FIPS_IPV6_PORT_HEADER,
+} from "../../lib/constants";
 ---
 
 <Base title="The Protocol Stack">
@@ -99,17 +105,21 @@ import ProtocolStack from "../../components/ProtocolStack";
         </div>
         <div class="flex justify-between border-t border-fips-border pt-1 mt-1">
           <span class="text-fips-accent">Base protocol overhead</span><span class="text-fips-accent"
-            >106 bytes</span
+            >{FIPS_BASE_OVERHEAD} bytes</span
           >
         </div>
         <div class="flex justify-between">
-          <span class="text-fips-muted">+ Port header (DataPacket)</span><span>+4 bytes</span>
+          <span class="text-fips-muted">+ Port header (DataPacket)</span><span
+            >+{FIPS_IPV6_PORT_HEADER} bytes</span
+          >
         </div>
         <div class="flex justify-between">
-          <span class="text-fips-green">- IPv6 header compression</span><span>-33 bytes</span>
+          <span class="text-fips-green">- IPv6 header compression</span><span
+            >-{FIPS_IPV6_HEADER_SAVINGS} bytes</span
+          >
         </div>
         <div class="flex justify-between border-t border-fips-border pt-1 mt-1 font-bold">
-          <span>IPv6 data path total</span><span>77 bytes</span>
+          <span>IPv6 data path total</span><span>{FIPS_IPV6_OVERHEAD} bytes</span>
         </div>
       </div>
 

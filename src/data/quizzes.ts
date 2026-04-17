@@ -1,4 +1,10 @@
 import type { QuizQuestion } from "../lib/types";
+import {
+  FIPS_BASE_OVERHEAD,
+  FIPS_IPV6_HEADER_SAVINGS,
+  FIPS_IPV6_OVERHEAD,
+  FIPS_IPV6_PORT_HEADER,
+} from "../lib/constants";
 
 export function getQuiz(slug: string): QuizQuestion[] {
   const q = quizzes[slug];
@@ -136,10 +142,14 @@ export const quizzes: Record<string, QuizQuestion[]> = {
     },
     {
       question: "What is the total per-packet overhead for IPv6 traffic through FIPS?",
-      options: ["37 bytes", "77 bytes", "106 bytes", "150 bytes"],
+      options: [
+        `${FIPS_IPV6_OVERHEAD - 40} bytes`,
+        `${FIPS_IPV6_OVERHEAD} bytes`,
+        `${FIPS_BASE_OVERHEAD} bytes`,
+        `${FIPS_BASE_OVERHEAD + 44} bytes`,
+      ],
       correctIndex: 1,
-      explanation:
-        "106 bytes base protocol overhead, minus 33 bytes saved by IPv6 header compression, plus 4 bytes port header = 77 bytes (FIPS_IPV6_OVERHEAD).",
+      explanation: `${FIPS_BASE_OVERHEAD} bytes base protocol overhead, minus ${FIPS_IPV6_HEADER_SAVINGS} bytes saved by IPv6 header compression, plus ${FIPS_IPV6_PORT_HEADER} bytes port header = ${FIPS_IPV6_OVERHEAD} bytes (FIPS_IPV6_OVERHEAD).`,
     },
   ],
 };

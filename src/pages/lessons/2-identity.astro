@@ -4,6 +4,7 @@ import LessonNav from "../../components/LessonNav.astro";
 import IdentityGenerator from "../../components/IdentityGenerator";
 import Quiz from "../../components/Quiz";
 import { getQuiz } from "../../data/quizzes";
+import { NODE_ADDR_BYTES, PUBKEY_BYTES } from "../../lib/constants";
 ---
 
 <Base title="Identity">
@@ -39,14 +40,16 @@ import { getQuiz } from "../../data/quizzes";
       >
         <div class="flex items-center gap-2">
           <span class="text-fips-muted w-32">Public Key</span>
-          <span class="text-fips-text">(33 bytes, compressed secp256k1)</span>
+          <span class="text-fips-text">({PUBKEY_BYTES} bytes, compressed secp256k1)</span>
         </div>
         <div class="text-fips-accent pl-4">↓ bech32 encode x-only key</div>
         <div class="flex items-center gap-2">
           <span class="text-fips-muted w-32">npub</span>
           <span class="text-fips-text">Application identity. What you share with others.</span>
         </div>
-        <div class="text-fips-accent pl-4">↓ SHA-256, truncate to 16 bytes</div>
+        <div class="text-fips-accent pl-4">
+          ↓ SHA-256, truncate to {NODE_ADDR_BYTES} bytes
+        </div>
         <div class="flex items-center gap-2">
           <span class="text-fips-muted w-32">node_addr</span>
           <span class="text-fips-text">Routing identifier. Appears in packet headers.</span>
