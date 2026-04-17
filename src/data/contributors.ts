@@ -93,6 +93,7 @@ export const contributors: Contributor[] = [
   {
     github: "Origami74",
     name: "Arjen",
+    role: "Initiator",
     npub: "npub1hw6amg8p24ne08c9gdq8hhpqx0t0pwanpae9z25crn7m9uy7yarse465gr",
   },
   {
@@ -107,6 +108,7 @@ export const contributors: Contributor[] = [
   },
   {
     name: "c03rad0r",
+    role: "Spirit",
     npub: "npub1c03rad0r6q833vh57kyd3ndu2jry30nkr0wepqfpsm05vq7he25slryrnw",
   },
 ];
