@@ -105,4 +105,8 @@ export const contributors: Contributor[] = [
     name: "OceanSlim",
     npub: "npub1zmc6qyqdfnllhnzzxr5wpepfpnzcf8q6m3jdveflmgruqvd3qa9sjv7f60",
   },
+  {
+    name: "c03rad0r",
+    npub: "npub1c03rad0r6q833vh57kyd3ndu2jry30nkr0wepqfpsm05vq7he25slryrnw",
+  },
 ];
