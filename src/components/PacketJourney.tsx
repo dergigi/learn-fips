@@ -142,6 +142,15 @@ export default function PacketJourney() {
     timer.current = window.setTimeout(tick, 400);
   }
 
+  function reset() {
+    if (timer.current !== null) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+    setPlaying(false);
+    setStepIdx(0);
+  }
+
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
       <h3 className="text-lg font-semibold mb-4">Packet Journey: A → D</h3>
@@ -299,6 +308,13 @@ export default function PacketJourney() {
           className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold disabled:opacity-40"
         >
           {playing ? "Playing..." : "▶ Play"}
+        </button>
+        <button
+          onClick={reset}
+          disabled={!playing && stepIdx === 0}
+          className="px-3 py-1 rounded border border-fips-border text-fips-muted hover:border-fips-accent/40 hover:text-fips-text transition-colors disabled:opacity-30"
+        >
+          Reset
         </button>
       </div>
     </div>
