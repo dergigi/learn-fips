@@ -12,15 +12,27 @@ export class BloomFilter {
     this.hashCount = hashCount;
   }
 
+  /**
+   * Kirsch–Mitzenmacher double hashing: one SHA-256 per item, two 32-bit
+   * halves are combined as h1 + i * h2 to synthesize the remaining
+   * positions. This keeps the false-positive rate within a small
+   * constant factor of independent hashes while making insert/query
+   * ~hashCount times cheaper.
+   *
+   * Using unsigned right shift (`>>> 0`) to promote the result of the
+   * bitwise OR to an unsigned 32-bit value avoids the classic Math.abs
+   * sign bug (Math.abs(-2147483648) === -2147483648), which previously
+   * could produce a negative modulus and throw off-byte indices.
+   */
   private hashIndices(item: Uint8Array): number[] {
+    const hash = sha256(item);
+    const h1 = ((hash[0]! << 24) | (hash[1]! << 16) | (hash[2]! << 8) | hash[3]!) >>> 0;
+    const h2 = ((hash[4]! << 24) | (hash[5]! << 16) | (hash[6]! << 8) | hash[7]!) >>> 0;
     const indices: number[] = [];
     for (let i = 0; i < this.hashCount; i++) {
-      const input = new Uint8Array(item.length + 1);
-      input.set(item);
-      input[item.length] = i;
-      const hash = sha256(input);
-      const val = (hash[0]! << 24) | (hash[1]! << 16) | (hash[2]! << 8) | hash[3]!;
-      indices.push(Math.abs(val) % this.bitCount);
+      // (h1 + i * h2) mod m, done in unsigned 32-bit space.
+      const combined = (h1 + Math.imul(i, h2)) >>> 0;
+      indices.push(combined % this.bitCount);
     }
     return indices;
   }
