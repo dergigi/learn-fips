@@ -54,6 +54,16 @@ export default function RoutingDemo() {
   const isLocal = source === dest;
   const isDirect = srcNode.peers.has(dest);
 
+  function pickRandom() {
+    if (nodeIds.length < 2) return;
+    const fromIdx = Math.floor(Math.random() * nodeIds.length);
+    let toIdx = Math.floor(Math.random() * (nodeIds.length - 1));
+    if (toIdx >= fromIdx) toIdx += 1;
+    setSource(nodeIds[fromIdx]!);
+    setDest(nodeIds[toIdx]!);
+    setStepIndex(0);
+  }
+
   const steps: Step[] = useMemo(() => {
     const s: Step[] = [];
 
@@ -147,6 +157,32 @@ export default function RoutingDemo() {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          onClick={pickRandom}
+          aria-label="Pick a random source and destination"
+          title="Random route"
+          className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors text-fips-muted hover:text-fips-accent"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3" />
+            <circle cx="8" cy="8" r="1" fill="currentColor" />
+            <circle cx="16" cy="8" r="1" fill="currentColor" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+            <circle cx="8" cy="16" r="1" fill="currentColor" />
+            <circle cx="16" cy="16" r="1" fill="currentColor" />
+          </svg>
+        </button>
       </div>
 
       <ol
