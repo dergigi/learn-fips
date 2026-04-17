@@ -17,6 +17,9 @@ function nodeAddrEqual(a: NodeAddr, b: NodeAddr): boolean {
   return true;
 }
 
+/** The labels used by demo widgets (mesh simulator, bloom filter, ...). */
+export const DEMO_NODE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"] as const;
+
 /** Generate a deterministic NodeAddr from a simple string ID (for simulation). */
 export function nodeAddrFromId(id: string): NodeAddr {
   const encoded = new TextEncoder().encode(id);
@@ -167,10 +170,9 @@ export function createDemoNodes(
   height: number
 ): Map<string, MeshNode> {
   const nodes = new Map<string, MeshNode>();
-  const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const padding = 60;
-  for (let i = 0; i < Math.min(count, 26); i++) {
-    const id = labels[i]!;
+  for (let i = 0; i < Math.min(count, DEMO_NODE_LABELS.length); i++) {
+    const id = DEMO_NODE_LABELS[i]!;
     nodes.set(id, {
       id,
       nodeAddr: nodeAddrFromId(id),

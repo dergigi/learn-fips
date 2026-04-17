@@ -80,10 +80,11 @@ import { getQuiz } from "../../data/quizzes";
       </p>
 
       <p>
-        The widget below lets you insert node names (which get hashed into <code
+        The widget below uses the same ten demo nodes as the simulator above. Each label hashes to a <code
           class="mono text-fips-accent">node_addr</code
-        > values), then query the filter. Try inserting a few names and querying for names you did not
-        insert to see false positives at work.
+        >, which is what actually lands in the filter. Insert a few, then query a node you never
+        inserted. Most will come back "definitely not present"; a few will come back "maybe present"
+        even though they were never added. That is a false positive.
       </p>
 
       <BloomFilterViz client:visible />
