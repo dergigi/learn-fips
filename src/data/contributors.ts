@@ -51,6 +51,7 @@ export const contributors: Contributor[] = [
   {
     github: "SatsAndSports",
     name: "SatsAndSports",
+    npub: "npub1zthq85gksjsjthv8h6rec2qeqs2mu0emrm9xknkhgw7hfl7csrnq6wxm56",
   },
   {
     github: "Origami74",
