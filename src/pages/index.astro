@@ -49,7 +49,7 @@ import { lessons } from "../data/lessons";
 
   <script>
     const visited: number[] = JSON.parse(localStorage.getItem("fips-visited") || "[]");
-    const total = 7;
+    const total = document.querySelectorAll<HTMLElement>(".lesson-card").length;
     const progressText = document.getElementById("progress-text");
     if (progressText) {
       progressText.textContent = `${visited.length}/${total} visited`;

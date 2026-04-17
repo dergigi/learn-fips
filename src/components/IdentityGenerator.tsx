@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { generateFullIdentity, hexEncode, type FipsIdentity } from "../lib/crypto";
 
 const steps = [
@@ -30,13 +30,17 @@ function formatValue(identity: FipsIdentity, key: string): string {
 export default function IdentityGenerator() {
   const [identity, setIdentity] = useState<FipsIdentity | null>(null);
   const [visibleSteps, setVisibleSteps] = useState(0);
+  const reduceMotion = useReducedMotion();
 
   function generate() {
     const id = generateFullIdentity();
     setIdentity(id);
     setVisibleSteps(0);
 
-    // Reveal steps one at a time
+    if (reduceMotion) {
+      setVisibleSteps(steps.length);
+      return;
+    }
     for (let i = 1; i <= steps.length; i++) {
       setTimeout(() => setVisibleSteps(i), i * 400);
     }

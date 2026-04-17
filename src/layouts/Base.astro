@@ -5,10 +5,21 @@ import { lessons } from "../data/lessons";
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
 }
 
-const { title, description = "An interactive guide to the FIPS mesh protocol" } = Astro.props;
+const {
+  title,
+  description = "An interactive guide to the FIPS mesh protocol",
+  ogImage,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
+const site = Astro.site ?? new URL("https://learn-fips.vercel.app");
+const canonical = new URL(currentPath, site).toString();
+const lessonSlug = currentPath.match(/\/lessons\/([^/]+)/)?.[1];
+const resolvedOgImage = ogImage ?? `/og/${lessonSlug ?? "default"}.svg`;
+const ogImageUrl = new URL(resolvedOgImage, site).toString();
+const fullTitle = `${title} | Learn FIPS`;
 ---
 
 <!doctype html>
@@ -17,10 +28,22 @@ const currentPath = Astro.url.pathname;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Learn FIPS" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-    <title>{title} | Learn FIPS</title>
+    <title>{fullTitle}</title>
   </head>
   <body class="flex flex-col min-h-dvh">
     <nav class="border-b border-fips-border bg-fips-surface/80 backdrop-blur-sm sticky top-0 z-50">
@@ -48,17 +71,20 @@ const currentPath = Astro.url.pathname;
         </div>
         <div class="flex items-center gap-3">
           <a
-            href="https://github.com/jmcorgan/fips"
+            href="https://github.com/dergigi/learn-fips"
             target="_blank"
             rel="noopener"
             class="text-fips-muted hover:text-fips-text text-sm transition-colors hidden sm:inline"
+            aria-label="View the source of this site on GitHub"
           >
-            GitHub
+            Source
           </a>
           <button
             id="mobile-menu-btn"
             class="md:hidden text-fips-muted hover:text-fips-text p-1"
-            aria-label="Open lesson menu"
+            aria-label="Toggle lesson menu"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
               <line x1="3" y1="5" x2="17" y2="5" />
@@ -106,7 +132,8 @@ const currentPath = Astro.url.pathname;
       const btn = document.getElementById("mobile-menu-btn");
       const menu = document.getElementById("mobile-menu");
       btn?.addEventListener("click", () => {
-        menu?.classList.toggle("hidden");
+        const open = menu?.classList.toggle("hidden") === false;
+        btn.setAttribute("aria-expanded", String(open));
       });
 
       // Mark current lesson as visited in localStorage

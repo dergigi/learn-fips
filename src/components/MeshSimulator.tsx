@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { buildSpanningTree, createDemoNodes, createDemoLinks, treeDistance, findNextHop, compareNodeAddr } from "../lib/mesh";
+import { buildSpanningTree, createDemoNodes, createDemoLinks, findNextHop, compareNodeAddr } from "../lib/mesh";
 import { hexEncode } from "../lib/crypto";
 import type { MeshNode, Link } from "../lib/types";
 
@@ -52,6 +52,12 @@ export default function MeshSimulator() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    if (canvas.width !== WIDTH * dpr || canvas.height !== HEIGHT * dpr) {
+      canvas.width = WIDTH * dpr;
+      canvas.height = HEIGHT * dpr;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
     // Draw links
@@ -129,7 +135,7 @@ export default function MeshSimulator() {
     }
   }, [nodes, links, selectedNode, routePath, showCoords, rootId, treeEdges]);
 
-  function handleCanvasMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
+  function handleCanvasPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = (e.clientX - rect.left) * (WIDTH / rect.width);
@@ -140,7 +146,6 @@ export default function MeshSimulator() {
       const dy = node.y - y;
       if (dx * dx + dy * dy < NODE_RADIUS * NODE_RADIUS) {
         if (routeFrom) {
-          // Calculate route
           const path: string[] = [routeFrom];
           let current = routeFrom;
           for (let hop = 0; hop < 20; hop++) {
@@ -155,6 +160,7 @@ export default function MeshSimulator() {
         } else {
           setSelectedNode(node.id);
           setDragging(node.id);
+          e.currentTarget.setPointerCapture(e.pointerId);
         }
         return;
       }
@@ -163,7 +169,7 @@ export default function MeshSimulator() {
     setRoutePath([]);
   }
 
-  function handleCanvasMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
+  function handleCanvasPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!dragging) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -178,7 +184,10 @@ export default function MeshSimulator() {
     });
   }
 
-  function handleCanvasMouseUp() {
+  function handleCanvasPointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (dragging && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     setDragging(null);
   }
 
@@ -242,12 +251,14 @@ export default function MeshSimulator() {
         ref={canvasRef}
         width={WIDTH}
         height={HEIGHT}
-        className="w-full rounded border border-fips-border bg-fips-bg cursor-crosshair"
+        role="img"
+        aria-label="Interactive mesh network diagram. Drag nodes to reposition them; tap a node to select it; use the buttons above to pick a route or remove a link."
+        className="w-full rounded border border-fips-border bg-fips-bg cursor-crosshair touch-none select-none"
         style={{ maxWidth: WIDTH }}
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
-        onMouseLeave={handleCanvasMouseUp}
+        onPointerDown={handleCanvasPointerDown}
+        onPointerMove={handleCanvasPointerMove}
+        onPointerUp={handleCanvasPointerUp}
+        onPointerCancel={handleCanvasPointerUp}
       />
 
       <div className="mt-3 flex gap-4 text-xs text-fips-muted">

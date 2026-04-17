@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { buildSpanningTree, treeDistance, findNextHop, compareNodeAddr, nodeAddrFromId } from "../lib/mesh";
+import { buildSpanningTree, treeDistance, nodeAddrFromId } from "../lib/mesh";
 import { hexEncode } from "../lib/crypto";
 import type { MeshNode, Link } from "../lib/types";
 
@@ -7,7 +7,7 @@ function shortAddr(addr: Uint8Array): string {
   return hexEncode(addr).slice(0, 6);
 }
 
-function makeDemoMesh(): { nodes: Map<string, MeshNode>; links: Link[] } {
+function makeDemoMesh(): { nodes: Map<string, MeshNode> } {
   const names = ["A", "B", "C", "D", "E"];
   const nodes = new Map<string, MeshNode>();
   for (const id of names) {
@@ -32,7 +32,7 @@ function makeDemoMesh(): { nodes: Map<string, MeshNode>; links: Link[] } {
   ];
 
   buildSpanningTree(nodes, links);
-  return { nodes, links };
+  return { nodes };
 }
 
 interface Step {
@@ -43,7 +43,7 @@ interface Step {
 }
 
 export default function RoutingDemo() {
-  const { nodes, links } = useMemo(() => makeDemoMesh(), []);
+  const { nodes } = useMemo(() => makeDemoMesh(), []);
   const [source, setSource] = useState("A");
   const [dest, setDest] = useState("D");
   const [stepIndex, setStepIndex] = useState(0);

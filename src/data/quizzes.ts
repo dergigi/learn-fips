@@ -91,7 +91,7 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       explanation: "Transit routers decrypt the link layer to read the routing envelope (node_addrs, TTL, path MTU) but cannot read the session-layer payload.",
     },
   ],
-  "7-final": [
+  "7-putting-it-together": [
     {
       question: "What triggers coordinate discovery in FIPS?",
       options: [

@@ -47,8 +47,6 @@ export default function BloomFilterViz() {
     bitArray.push(!!(filter.bits[i >> 3] & (1 << (i & 7))));
   }
 
-  const rows = Math.ceil(bitArray.length / GRID_COLS);
-
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
       <h3 className="text-lg font-semibold mb-3">Bloom Filter</h3>

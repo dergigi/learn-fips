@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 interface JourneyStep {
   title: string;
@@ -105,6 +105,7 @@ const steps: JourneyStep[] = [
 export default function PacketJourney() {
   const [stepIdx, setStepIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const step = steps[stepIdx];
 
@@ -167,7 +168,7 @@ export default function PacketJourney() {
               key={stepIdx}
               initial={{ cx: nodes[step.linkHighlight].x, cy: 50 }}
               animate={{ cx: nodes[step.linkHighlight + 1].x, cy: 50 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
+              transition={{ duration: reduceMotion ? 0 : 1.2, ease: "easeInOut" }}
               r={6}
               fill="#f59e0b"
               opacity={0.9}
