@@ -474,11 +474,16 @@ export default function RecoveryFlow() {
     };
   }, []);
 
-  const play = () => {
-    if (playing) return;
+  const togglePlay = () => {
+    if (playing) {
+      stop();
+      return;
+    }
+    // If we were sitting on the last frame, restart; otherwise resume.
+    const atEnd = frameIdx >= frames.length - 1;
+    let i = atEnd ? 0 : frameIdx;
+    if (atEnd) setFrameIdx(0);
     setPlaying(true);
-    setFrameIdx(0);
-    let i = 0;
     const step = () => {
       i += 1;
       if (i >= frames.length) {
@@ -496,6 +501,10 @@ export default function RecoveryFlow() {
     stop();
     setFrameIdx(0);
   };
+
+  const atStart = frameIdx === 0;
+  const atEnd = frameIdx >= frames.length - 1;
+  const playLabel = playing ? "⏸ Pause" : atStart || atEnd ? "▶ Play" : "▶ Resume";
 
   const pickScenario = (id: ScenarioId) => {
     stop();
@@ -655,27 +664,32 @@ export default function RecoveryFlow() {
       <div className="flex flex-wrap gap-2 text-xs">
         <button
           type="button"
-          onClick={() => !playing && setFrameIdx(Math.max(0, frameIdx - 1))}
-          disabled={playing || frameIdx === 0}
+          onClick={() => {
+            stop();
+            setFrameIdx(Math.max(0, frameIdx - 1));
+          }}
+          disabled={atStart}
           className="px-3 py-1 rounded border border-fips-border text-fips-muted disabled:opacity-30"
         >
           ← Back
         </button>
         <button
           type="button"
-          onClick={() => !playing && setFrameIdx(Math.min(frames.length - 1, frameIdx + 1))}
-          disabled={playing || frameIdx >= frames.length - 1}
+          onClick={() => {
+            stop();
+            setFrameIdx(Math.min(frames.length - 1, frameIdx + 1));
+          }}
+          disabled={atEnd}
           className="px-3 py-1 rounded border border-fips-border text-fips-accent disabled:opacity-30"
         >
           Next →
         </button>
         <button
           type="button"
-          onClick={play}
-          disabled={playing}
-          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold disabled:opacity-40"
+          onClick={togglePlay}
+          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold"
         >
-          {playing ? "Playing…" : "▶ Play"}
+          {playLabel}
         </button>
         <button
           type="button"

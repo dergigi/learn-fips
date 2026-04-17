@@ -124,11 +124,24 @@ export default function PacketJourney() {
     };
   }, []);
 
-  function play() {
-    if (playing) return;
+  function pause() {
+    if (timer.current !== null) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+    setPlaying(false);
+  }
+
+  function togglePlay() {
+    if (playing) {
+      pause();
+      return;
+    }
+    // If we were at the last step, start the run over; otherwise resume.
+    const atEnd = stepIdx >= steps.length - 1;
+    let i = atEnd ? 0 : stepIdx;
+    if (atEnd) setStepIdx(0);
     setPlaying(true);
-    setStepIdx(0);
-    let i = 0;
     const tick = () => {
       i++;
       if (i >= steps.length) {
@@ -143,13 +156,13 @@ export default function PacketJourney() {
   }
 
   function reset() {
-    if (timer.current !== null) {
-      window.clearTimeout(timer.current);
-      timer.current = null;
-    }
-    setPlaying(false);
+    pause();
     setStepIdx(0);
   }
+
+  const atStart = stepIdx === 0;
+  const atEnd = stepIdx >= steps.length - 1;
+  const playLabel = playing ? "⏸ Pause" : atStart || atEnd ? "▶ Play" : "▶ Resume";
 
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
@@ -289,29 +302,34 @@ export default function PacketJourney() {
       {/* Controls */}
       <div className="flex gap-2 text-xs">
         <button
-          onClick={() => !playing && setStepIdx(Math.max(0, stepIdx - 1))}
-          disabled={playing || stepIdx === 0}
+          onClick={() => {
+            pause();
+            setStepIdx(Math.max(0, stepIdx - 1));
+          }}
+          disabled={atStart}
           className="px-3 py-1 rounded border border-fips-border text-fips-muted disabled:opacity-30"
         >
           ← Back
         </button>
         <button
-          onClick={() => !playing && setStepIdx(Math.min(steps.length - 1, stepIdx + 1))}
-          disabled={playing || stepIdx >= steps.length - 1}
+          onClick={() => {
+            pause();
+            setStepIdx(Math.min(steps.length - 1, stepIdx + 1));
+          }}
+          disabled={atEnd}
           className="px-3 py-1 rounded border border-fips-border text-fips-accent disabled:opacity-30"
         >
           Next →
         </button>
         <button
-          onClick={play}
-          disabled={playing}
-          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold disabled:opacity-40"
+          onClick={togglePlay}
+          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold"
         >
-          {playing ? "Playing..." : "▶ Play"}
+          {playLabel}
         </button>
         <button
           onClick={reset}
-          disabled={!playing && stepIdx === 0}
+          disabled={!playing && atStart}
           className="px-3 py-1 rounded border border-fips-border text-fips-muted hover:border-fips-accent/40 hover:text-fips-text transition-colors disabled:opacity-30"
         >
           Reset
