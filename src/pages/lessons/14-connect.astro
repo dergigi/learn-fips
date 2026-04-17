@@ -1,0 +1,243 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import HeroMesh from "../../components/HeroMesh";
+
+const FIPS_REPO = "https://github.com/jmcorgan/fips";
+const FIPS_ISSUES = "https://github.com/jmcorgan/fips/issues";
+const FIPS_CONTRIBUTING = "https://github.com/jmcorgan/fips/blob/master/CONTRIBUTING.md";
+const FIPS_DESIGN_DOCS = "https://github.com/jmcorgan/fips/tree/master/docs/design";
+const FIPS_TESTING = "https://github.com/jmcorgan/fips/tree/master/testing";
+const FIPS_SITE = "https://fips.network";
+const LEARN_FIPS_REPO = "https://github.com/dergigi/learn-fips";
+const CORGAN_QUOTE_URL =
+  "https://njump.to/nevent1qqsqjkq3yxynqsj7lkk6dst9h4el8yx4rlwysn8pngqewpxk9aqttncpzamhxue69uhhyetvv9ujumn0wvh8xmmrd9skctczyq4m4nj48mlt7kxa2kgjz60e9sgj86mpy8tm5zf0d3gpqjhuxxkw7qcyqqqqqqgg0hv3z";
+---
+
+<Base title="Connect and Contribute">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 14</p>
+    <h1 class="text-3xl font-bold mb-8">Connect and Contribute</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        A mesh is only as interesting as the peers on it. FIPS is a young protocol with a small,
+        focused group of people working on it. The project grows faster with more nodes, more eyes
+        on the specs, and more applications that treat an npub as a first-class address. This page
+        is the shortest path from reader to participant.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Where the project lives</h2>
+
+      <div class="grid md:grid-cols-2 gap-3 not-prose my-2">
+        <a
+          href={FIPS_REPO}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">jmcorgan/fips</div>
+          <div class="text-xs text-fips-muted">
+            The reference implementation in Rust. Source, issue tracker, releases.
+          </div>
+        </a>
+        <a
+          href={FIPS_DESIGN_DOCS}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">docs/design</div>
+          <div class="text-xs text-fips-muted">
+            The specs this site is built from. Start at <code class="font-mono">fips-intro.md</code
+            >.
+          </div>
+        </a>
+        <a
+          href={FIPS_SITE}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">fips.network</div>
+          <div class="text-xs text-fips-muted">
+            Project homepage, status, and deployed test mesh.
+          </div>
+        </a>
+        <a
+          href={LEARN_FIPS_REPO}
+          target="_blank"
+          rel="noopener"
+          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+        >
+          <div class="font-semibold text-fips-accent mb-1">dergigi/learn-fips</div>
+          <div class="text-xs text-fips-muted">
+            The source of this site. Typos, unclear diagrams, missing lessons all live here.
+          </div>
+        </a>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Reach people directly</h2>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-text">
+        <li>
+          <span class="font-semibold">GitHub issues.</span> The primary channel for bug reports, design
+          questions, and feature discussion. Search first, then <a
+            href={FIPS_ISSUES}
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">open a new one</a
+          > if nothing matches.
+        </li>
+        <li>
+          <span class="font-semibold">Pull requests.</span> Walk the <a
+            href={FIPS_CONTRIBUTING}
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">CONTRIBUTING</a
+          > guide, keep commits focused, and update the relevant spec in the same change when you touch
+          wire format, routing, or configuration behaviour.
+        </li>
+        <li>
+          <span class="font-semibold">Nostr.</span> FIPS is a Nostr-native project. The author and a growing
+          crowd of FIPS tinkerers hang out on Nostr and discuss new builds, test-node topology, and protocol
+          quirks there. Follow the threads around <a
+            href={CORGAN_QUOTE_URL}
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">notes like this</a
+          > from the author.
+        </li>
+        <li>
+          <span class="font-semibold">The mesh itself.</span> Once you are on the test mesh from the previous
+          lesson, <code class="font-mono">fipsctl show peers</code> shows you who else is online. A short
+          <code class="font-mono">ssh -6</code> or a Nostr DM to one of them is a perfectly fine way to
+          say hi.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">What a useful bug report looks like</h2>
+
+      <p>
+        The protocol still changes. A good report keeps the feedback loop tight and saves everyone a
+        round trip:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-1 text-fips-muted text-sm">
+        <li>
+          FIPS version (<code class="font-mono">fipsctl show status</code>), Rust version, OS,
+          transport you are using.
+        </li>
+        <li>What you did, what you expected, what happened.</li>
+        <li>
+          Relevant output from <code class="font-mono">fipsctl show links</code>,
+          <code class="font-mono">show tree</code>, <code class="font-mono">show mmp</code>, or the
+          <code class="font-mono">fips</code> log, trimmed to the interesting window.
+        </li>
+        <li>
+          If the bug touches routing or coordinates, the pair of npubs involved and whether the link
+          was freshly established.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Ways to help, in order of effort</h2>
+
+      <div class="space-y-3 not-prose my-2">
+        <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
+          <p class="font-semibold text-fips-accent text-sm mb-1">Run a node</p>
+          <p class="text-sm text-fips-muted">
+            Every node you keep online is a new peer someone else can reach. If it stays up for more
+            than a day, add it to your bootstrap config so friends can pin you too.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
+          <p class="font-semibold text-fips-accent text-sm mb-1">
+            Read a spec and file what you find
+          </p>
+          <p class="text-sm text-fips-muted">
+            The design docs are the ground truth. If a paragraph is unclear, under-specified, or
+            contradicts the code, that is a bug worth reporting. This site was written from them, so
+            ambiguities surfaced here are worth fixing upstream.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
+          <p class="font-semibold text-fips-accent text-sm mb-1">Ship a small patch</p>
+          <p class="text-sm text-fips-muted">
+            Transport fixes, clippy warnings, docs, an added <a
+              href={FIPS_TESTING}
+              target="_blank"
+              rel="noopener"
+              class="text-fips-accent underline">integration harness</a
+            > case. Small PRs get merged fast and teach you the codebase.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
+          <p class="font-semibold text-fips-accent text-sm mb-1">
+            Bring an application onto the mesh
+          </p>
+          <p class="text-sm text-fips-muted">
+            Anything that speaks IPv6 works unmodified. The Nostr relay, Kubernetes, and WireGuard
+            examples in the repo are good starting points. Your own sidecar is the best way to
+            pressure-test the IPv6 adapter.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
+          <p class="font-semibold text-fips-accent text-sm mb-1">Improve this site</p>
+          <p class="text-sm text-fips-muted">
+            Spot an inaccuracy, a confusing diagram, or a missing lesson? <a
+              href={LEARN_FIPS_REPO}
+              target="_blank"
+              rel="noopener"
+              class="text-fips-accent underline">learn-fips</a
+            > is MIT-licensed and happy to take PRs. The lessons data drives the navigation, so adding
+            a new lesson is a couple of files.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">A closing note</h2>
+
+      <p>
+        Networks are social objects before they are technical ones. FIPS only exists because people
+        keep showing up, running nodes, and arguing about the right way to encode an error signal.
+        Read the source, say hi, break something useful. That is the whole job.
+      </p>
+    </section>
+
+    <LessonNav current={14} />
+  </article>
+
+  <section class="hex-bg relative overflow-hidden">
+    <div class="hero-mesh-wrap absolute inset-0">
+      <HeroMesh client:load />
+      <div class="hero-mesh-fade absolute inset-0 pointer-events-none"></div>
+    </div>
+    <figure class="relative max-w-3xl mx-auto px-4 pt-16 pb-40 md:pb-48">
+      <span
+        aria-hidden="true"
+        class="absolute -top-2 left-4 md:left-6 text-fips-accent font-mono text-6xl leading-none select-none"
+        >&ldquo;</span
+      >
+      <blockquote class="text-fips-text text-lg md:text-xl leading-relaxed italic">
+        <p class="mb-4">
+          Engineering solutions to problems is mostly about assembling existing pieces into a new
+          whole, more so than inventing a new wheel.
+        </p>
+        <p>
+          FIPS combines known, battle tested concepts going back decades in the fields of
+          networking, cryptography, distributed computing, resilient communications, and operating
+          systems, with full credit to those who came before.
+        </p>
+      </blockquote>
+      <figcaption class="mt-6 text-sm text-fips-muted font-mono">
+        &mdash;
+        <a
+          href={CORGAN_QUOTE_URL}
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent hover:underline">Johnathan Corgan</a
+        >, author of FIPS
+      </figcaption>
+    </figure>
+  </section>
+</Base>

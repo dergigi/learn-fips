@@ -91,4 +91,11 @@ export const lessons: Lesson[] = [
     title: "Try It",
     description: "Install a node, join the public test mesh, and send your first packet across it.",
   },
+  {
+    slug: "14-connect",
+    number: 14,
+    title: "Connect and Contribute",
+    description:
+      "Find the people building FIPS, file useful bug reports, and help the protocol grow.",
+  },
 ];
