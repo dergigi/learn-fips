@@ -23,10 +23,38 @@ const categories: Category[] = [
     color: "border-blue-400/30 bg-blue-400/5",
     description: "Tunnels FIPS over existing networks",
     transports: [
-      { name: "UDP/IP", mtu: "1280-1472", reliable: false, connectionOriented: false, notes: "Primary internet transport. No TCP-over-TCP problem.", status: "implemented" },
-      { name: "TCP/IP", mtu: "1400", reliable: true, connectionOriented: true, notes: "For networks where UDP is blocked. Adds head-of-line blocking.", status: "implemented" },
-      { name: "Tor", mtu: "1400", reliable: true, connectionOriented: true, notes: "Hides your IP from peers. 200ms-2s RTT. SOCKS5 outbound + onion service inbound.", status: "implemented" },
-      { name: "WebSocket", mtu: "Stream", reliable: true, connectionOriented: true, notes: "Browser-compatible overlay.", status: "future" },
+      {
+        name: "UDP/IP",
+        mtu: "1280-1472",
+        reliable: false,
+        connectionOriented: false,
+        notes: "Primary internet transport. No TCP-over-TCP problem.",
+        status: "implemented",
+      },
+      {
+        name: "TCP/IP",
+        mtu: "1400",
+        reliable: true,
+        connectionOriented: true,
+        notes: "For networks where UDP is blocked. Adds head-of-line blocking.",
+        status: "implemented",
+      },
+      {
+        name: "Tor",
+        mtu: "1400",
+        reliable: true,
+        connectionOriented: true,
+        notes: "Hides your IP from peers. 200ms-2s RTT. SOCKS5 outbound + onion service inbound.",
+        status: "implemented",
+      },
+      {
+        name: "WebSocket",
+        mtu: "Stream",
+        reliable: true,
+        connectionOriented: true,
+        notes: "Browser-compatible overlay.",
+        status: "future",
+      },
     ],
   },
   {
@@ -34,10 +62,39 @@ const categories: Category[] = [
     color: "border-green-400/30 bg-green-400/5",
     description: "Broadcast/multicast-capable local media",
     transports: [
-      { name: "Ethernet", mtu: "1500", reliable: false, connectionOriented: false, notes: "Raw AF_PACKET frames. EtherType 0x2121. Beacon discovery via broadcast.", status: "implemented" },
-      { name: "WiFi", mtu: "1500", reliable: false, connectionOriented: false, notes: "Infrastructure mode works like Ethernet. Broadcast discovery unreliable in managed mode.", status: "future" },
-      { name: "BLE", mtu: "23-517", reliable: true, connectionOriented: true, notes: "L2CAP CoC with per-link MTU negotiation.", status: "future" },
-      { name: "Radio", mtu: "51-222", reliable: false, connectionOriented: false, notes: "Low bandwidth, long range. Constrained MTU.", status: "future" },
+      {
+        name: "Ethernet",
+        mtu: "1500",
+        reliable: false,
+        connectionOriented: false,
+        notes: "Raw AF_PACKET frames. EtherType 0x2121. Beacon discovery via broadcast.",
+        status: "implemented",
+      },
+      {
+        name: "WiFi",
+        mtu: "1500",
+        reliable: false,
+        connectionOriented: false,
+        notes:
+          "Infrastructure mode works like Ethernet. Broadcast discovery unreliable in managed mode.",
+        status: "future",
+      },
+      {
+        name: "BLE",
+        mtu: "23-517",
+        reliable: true,
+        connectionOriented: true,
+        notes: "L2CAP CoC with per-link MTU negotiation.",
+        status: "future",
+      },
+      {
+        name: "Radio",
+        mtu: "51-222",
+        reliable: false,
+        connectionOriented: false,
+        notes: "Low bandwidth, long range. Constrained MTU.",
+        status: "future",
+      },
     ],
   },
   {
@@ -45,8 +102,22 @@ const categories: Category[] = [
     color: "border-amber-400/30 bg-amber-400/5",
     description: "Fixed connections between two endpoints",
     transports: [
-      { name: "Serial", mtu: "256-1500", reliable: true, connectionOriented: true, notes: "SLIP/COBS framing. Physical wired connection.", status: "future" },
-      { name: "Satellite", mtu: "Varies", reliable: false, connectionOriented: false, notes: "High latency, wide coverage.", status: "future" },
+      {
+        name: "Serial",
+        mtu: "256-1500",
+        reliable: true,
+        connectionOriented: true,
+        notes: "SLIP/COBS framing. Physical wired connection.",
+        status: "future",
+      },
+      {
+        name: "Satellite",
+        mtu: "Varies",
+        reliable: false,
+        connectionOriented: false,
+        notes: "High latency, wide coverage.",
+        status: "future",
+      },
     ],
   },
 ];
@@ -83,11 +154,13 @@ export default function TransportGrid() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-semibold">{t.name}</span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          t.status === "implemented"
-                            ? "bg-fips-green/20 text-fips-green"
-                            : "bg-fips-muted/20 text-fips-muted"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
+                            t.status === "implemented"
+                              ? "bg-fips-green/20 text-fips-green"
+                              : "bg-fips-muted/20 text-fips-muted"
+                          }`}
+                        >
                           {t.status === "implemented" ? "live" : "planned"}
                         </span>
                       </div>
@@ -102,7 +175,9 @@ export default function TransportGrid() {
                           transition={{ duration: 0.15 }}
                           className="overflow-hidden"
                         >
-                          <div className={`rounded-b-lg border border-t-0 p-3 text-xs ${cat.color} space-y-1`}>
+                          <div
+                            className={`rounded-b-lg border border-t-0 p-3 text-xs ${cat.color} space-y-1`}
+                          >
                             <div className="flex gap-4">
                               <span className="text-fips-muted">MTU:</span>
                               <span className="font-mono">{t.mtu}</span>
@@ -113,7 +188,9 @@ export default function TransportGrid() {
                             </div>
                             <div className="flex gap-4">
                               <span className="text-fips-muted">Connection:</span>
-                              <span>{t.connectionOriented ? "Connection-oriented" : "Connectionless"}</span>
+                              <span>
+                                {t.connectionOriented ? "Connection-oriented" : "Connectionless"}
+                              </span>
                             </div>
                             <p className="text-fips-muted pt-1">{t.notes}</p>
                           </div>

@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import PacketJourney from "../../components/PacketJourney";
 import Quiz from "../../components/Quiz";
-import { quizzes } from "../../data/quizzes";
+import { getQuiz } from "../../data/quizzes";
 ---
 
 <Base title="Encryption">
@@ -13,7 +13,9 @@ import { quizzes } from "../../data/quizzes";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        Every FIPS packet passes through two independent encryption layers. This is not optional. There is no plaintext mode. Both layers use the Noise Protocol Framework with ChaCha20-Poly1305 as the AEAD cipher.
+        Every FIPS packet passes through two independent encryption layers. This is not optional.
+        There is no plaintext mode. Both layers use the Noise Protocol Framework with
+        ChaCha20-Poly1305 as the AEAD cipher.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The two layers</h2>
@@ -22,12 +24,16 @@ import { quizzes } from "../../data/quizzes";
         <div class="rounded-lg border border-green-400/30 bg-green-400/5 p-4">
           <h3 class="font-semibold text-green-400 mb-2">FMP: Hop-by-hop (Noise IK)</h3>
           <p class="text-sm text-fips-muted">
-            Encrypts traffic between adjacent peers. Each link has its own Noise IK session. When B forwards a packet from A toward D, it decrypts A's link encryption and re-encrypts under its own link encryption for the next hop.
+            Encrypts traffic between adjacent peers. Each link has its own Noise IK session. When B
+            forwards a packet from A toward D, it decrypts A's link encryption and re-encrypts under
+            its own link encryption for the next hop.
           </p>
           <div class="mt-3 text-xs font-mono space-y-1 text-fips-muted">
             <p><span class="text-green-400">Pattern:</span> Noise IK</p>
             <p><span class="text-green-400">Key exchange:</span> Single round-trip</p>
-            <p><span class="text-green-400">Identity:</span> Initiator sends npub in first message</p>
+            <p>
+              <span class="text-green-400">Identity:</span> Initiator sends npub in first message
+            </p>
             <p><span class="text-green-400">Purpose:</span> Authentication, link confidentiality</p>
           </div>
         </div>
@@ -35,13 +41,17 @@ import { quizzes } from "../../data/quizzes";
         <div class="rounded-lg border border-blue-400/30 bg-blue-400/5 p-4">
           <h3 class="font-semibold text-blue-400 mb-2">FSP: End-to-end (Noise XK)</h3>
           <p class="text-sm text-fips-muted">
-            Encrypts traffic between the original sender and the final recipient. Transit routers cannot read this layer. It survives all intermediate link decryptions and re-encryptions intact.
+            Encrypts traffic between the original sender and the final recipient. Transit routers
+            cannot read this layer. It survives all intermediate link decryptions and re-encryptions
+            intact.
           </p>
           <div class="mt-3 text-xs font-mono space-y-1 text-fips-muted">
             <p><span class="text-blue-400">Pattern:</span> Noise XK</p>
             <p><span class="text-blue-400">Key exchange:</span> Three messages</p>
             <p><span class="text-blue-400">Identity:</span> Initiator's npub hidden until msg3</p>
-            <p><span class="text-blue-400">Purpose:</span> End-to-end confidentiality, forward secrecy</p>
+            <p>
+              <span class="text-blue-400">Purpose:</span> End-to-end confidentiality, forward secrecy
+            </p>
           </div>
         </div>
       </div>
@@ -49,36 +59,48 @@ import { quizzes } from "../../data/quizzes";
       <h2 class="text-xl font-semibold mt-8 mb-4">Why two layers?</h2>
 
       <p>
-        Consider what a single layer gives you. If you only had end-to-end encryption, transit routers would need to see routing headers in plaintext, exposing traffic patterns. If you only had link encryption, each transit router could read the payload before re-encrypting for the next hop.
+        Consider what a single layer gives you. If you only had end-to-end encryption, transit
+        routers would need to see routing headers in plaintext, exposing traffic patterns. If you
+        only had link encryption, each transit router could read the payload before re-encrypting
+        for the next hop.
       </p>
 
       <p>
-        The two-layer design solves both problems. FMP handles authentication between peers and protects the routing envelope. FSP protects the application payload from everyone except the intended recipient. Transit routers decrypt the FMP layer to make forwarding decisions, but the FSP layer inside is opaque to them.
+        The two-layer design solves both problems. FMP handles authentication between peers and
+        protects the routing envelope. FSP protects the application payload from everyone except the
+        intended recipient. Transit routers decrypt the FMP layer to make forwarding decisions, but
+        the FSP layer inside is opaque to them.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Why IK for links, XK for sessions?</h2>
 
       <p>
-        FMP uses Noise IK because when you configure a peer, you already know its public key. IK lets the initiator transmit their static key immediately, completing mutual authentication in a single round-trip. This is fast, which matters for link setup.
+        FMP uses Noise IK because when you configure a peer, you already know its public key. IK
+        lets the initiator transmit their static key immediately, completing mutual authentication
+        in a single round-trip. This is fast, which matters for link setup.
       </p>
 
       <p>
-        FSP uses Noise XK because session traffic crosses untrusted intermediate nodes. XK withholds the initiator's static key until the third message, where it is encrypted under the full shared secret. This means transit routers (and even the responder until msg3) cannot correlate the initiator's identity from the handshake alone.
+        FSP uses Noise XK because session traffic crosses untrusted intermediate nodes. XK withholds
+        the initiator's static key until the third message, where it is encrypted under the full
+        shared secret. This means transit routers (and even the responder until msg3) cannot
+        correlate the initiator's identity from the handshake alone.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Watch a packet cross the mesh</h2>
 
       <p>
-        The animation below tracks a packet from node A to node D across three hops, over three different transports. Step through it or hit play. Watch how the green FMP layer gets stripped and reapplied at each hop, while the blue FSP layer stays untouched until the final destination.
+        The animation below tracks a packet from node A to node D across three hops, over three
+        different transports. Step through it or hit play. Watch how the green FMP layer gets
+        stripped and reapplied at each hop, while the blue FSP layer stays untouched until the final
+        destination.
       </p>
 
       <PacketJourney client:visible />
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Who can see what (revisited)</h2>
 
-      <p>
-        With both encryption layers active, here is what different observers can learn:
-      </p>
+      <p>With both encryption layers active, here is what different observers can learn:</p>
 
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
@@ -97,20 +119,24 @@ import { quizzes } from "../../data/quizzes";
             </tr>
             <tr class="border-b border-fips-border/50">
               <td class="py-2 pr-4 font-medium">Transit router (B, C)</td>
-              <td class="py-2 pr-4 text-fips-muted">Source/dest node_addrs, packet size, coordinates</td>
+              <td class="py-2 pr-4 text-fips-muted"
+                >Source/dest node_addrs, packet size, coordinates</td
+              >
               <td class="py-2 text-fips-muted">Payload, npubs of endpoints, session content</td>
             </tr>
             <tr>
               <td class="py-2 pr-4 font-medium">Destination (D)</td>
               <td class="py-2 pr-4 text-fips-muted">Sender's npub, payload, session metadata</td>
-              <td class="py-2 text-fips-muted">Route the packet took, intermediate node identities</td>
+              <td class="py-2 text-fips-muted"
+                >Route the packet took, intermediate node identities</td
+              >
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <Quiz client:visible questions={quizzes["6-encryption"]} title="Encryption Quiz" />
+    <Quiz client:visible questions={getQuiz("6-encryption")} title="Encryption Quiz" />
 
     <LessonNav current={6} />
   </article>

@@ -11,23 +11,34 @@ import ProtocolStack from "../../components/ProtocolStack";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        FIPS organizes its protocol into four layers. Each layer does one job and knows nothing about the specifics of the layers above or below it. You can add a new transport (say, satellite) without touching the routing code. You can change the session encryption scheme without any transport being aware.
+        FIPS organizes its protocol into four layers. Each layer does one job and knows nothing
+        about the specifics of the layers above or below it. You can add a new transport (say,
+        satellite) without touching the routing code. You can change the session encryption scheme
+        without any transport being aware.
       </p>
 
       <p>
-        This separation is strict. Transport plugins know nothing about sessions. The routing layer knows nothing about application addressing. Applications know nothing about which physical media carry their traffic.
+        This separation is strict. Transport plugins know nothing about sessions. The routing layer
+        knows nothing about application addressing. Applications know nothing about which physical
+        media carry their traffic.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Explore the layers</h2>
 
-      <p>Click any layer to expand it and see what it knows, what it cannot see, and what its wire format looks like.</p>
+      <p>
+        Click any layer to expand it and see what it knows, what it cannot see, and what its wire
+        format looks like.
+      </p>
 
       <ProtocolStack client:visible />
 
       <h2 class="text-xl font-semibold mt-8 mb-4">How they map to traditional networking</h2>
 
       <p>
-        If you know the OSI model or TCP/IP, FMP spans what would traditionally be separate link and network layers. This is intentional: in a self-organizing mesh, the same layer that authenticates peers also makes routing decisions, because routing depends on authenticated peer state (spanning tree positions, bloom filters).
+        If you know the OSI model or TCP/IP, FMP spans what would traditionally be separate link and
+        network layers. This is intentional: in a self-organizing mesh, the same layer that
+        authenticates peers also makes routing decisions, because routing depends on authenticated
+        peer state (spanning tree positions, bloom filters).
       </p>
 
       <div class="overflow-x-auto mt-4">
@@ -67,26 +78,44 @@ import ProtocolStack from "../../components/ProtocolStack";
       <h2 class="text-xl font-semibold mt-8 mb-4">The overhead budget</h2>
 
       <p>
-        Each layer adds bytes to every packet. Here is the breakdown for a typical IPv6 packet going through the mesh:
+        Each layer adds bytes to every packet. Here is the breakdown for a typical IPv6 packet going
+        through the mesh:
       </p>
 
-      <div class="mt-4 rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm space-y-1">
-        <div class="flex justify-between"><span class="text-fips-muted">Link encryption (FMP)</span><span>37 bytes</span></div>
-        <div class="flex justify-between"><span class="text-fips-muted">SessionDatagram envelope</span><span>35 bytes</span></div>
-        <div class="flex justify-between"><span class="text-fips-muted">FSP header + inner header</span><span>18 bytes</span></div>
-        <div class="flex justify-between"><span class="text-fips-muted">Session AEAD tag</span><span>16 bytes</span></div>
-        <div class="flex justify-between border-t border-fips-border pt-1 mt-1">
-          <span class="text-fips-accent">Base protocol overhead</span><span class="text-fips-accent">106 bytes</span>
+      <div
+        class="mt-4 rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm space-y-1"
+      >
+        <div class="flex justify-between">
+          <span class="text-fips-muted">Link encryption (FMP)</span><span>37 bytes</span>
         </div>
-        <div class="flex justify-between"><span class="text-fips-muted">+ Port header (DataPacket)</span><span>+4 bytes</span></div>
-        <div class="flex justify-between"><span class="text-fips-green">- IPv6 header compression</span><span>-33 bytes</span></div>
+        <div class="flex justify-between">
+          <span class="text-fips-muted">SessionDatagram envelope</span><span>35 bytes</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-fips-muted">FSP header + inner header</span><span>18 bytes</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-fips-muted">Session AEAD tag</span><span>16 bytes</span>
+        </div>
+        <div class="flex justify-between border-t border-fips-border pt-1 mt-1">
+          <span class="text-fips-accent">Base protocol overhead</span><span class="text-fips-accent"
+            >106 bytes</span
+          >
+        </div>
+        <div class="flex justify-between">
+          <span class="text-fips-muted">+ Port header (DataPacket)</span><span>+4 bytes</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-fips-green">- IPv6 header compression</span><span>-33 bytes</span>
+        </div>
         <div class="flex justify-between border-t border-fips-border pt-1 mt-1 font-bold">
           <span>IPv6 data path total</span><span>77 bytes</span>
         </div>
       </div>
 
       <p class="mt-4">
-        With a standard UDP transport (MTU 1472), that leaves 1395 bytes of effective IPv6 payload per packet. Enough for most TCP segments without fragmentation.
+        With a standard UDP transport (MTU 1472), that leaves 1395 bytes of effective IPv6 payload
+        per packet. Enough for most TCP segments without fragmentation.
       </p>
     </section>
 

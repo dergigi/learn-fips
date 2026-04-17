@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import IdentityGenerator from "../../components/IdentityGenerator";
 import Quiz from "../../components/Quiz";
-import { quizzes } from "../../data/quizzes";
+import { getQuiz } from "../../data/quizzes";
 ---
 
 <Base title="Identity">
@@ -13,22 +13,30 @@ import { quizzes } from "../../data/quizzes";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        Most networks separate identity from addressing. You get an IP address from a DHCP server, and separately prove who you are through certificates issued by a third party. FIPS collapses these into a single step: your cryptographic keypair <em>is</em> your address.
+        Most networks separate identity from addressing. You get an IP address from a DHCP server,
+        and separately prove who you are through certificates issued by a third party. FIPS
+        collapses these into a single step: your cryptographic keypair <em>is</em> your address.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The keypair</h2>
 
       <p>
-        A FIPS node starts by generating (or loading) a secp256k1 keypair. This is the same elliptic curve used by Bitcoin and Nostr. The private key stays on your node. The public key, encoded in bech32 as an <code class="mono text-fips-accent">npub</code>, is how other users and applications identify you.
+        A FIPS node starts by generating (or loading) a secp256k1 keypair. This is the same elliptic
+        curve used by Bitcoin and Nostr. The private key stays on your node. The public key, encoded
+        in bech32 as an <code class="mono text-fips-accent">npub</code>, is how other users and
+        applications identify you.
       </p>
 
       <p>
-        From this single public key, FIPS derives two more identifiers. Both are deterministic. No coordination with anyone else is needed.
+        From this single public key, FIPS derives two more identifiers. Both are deterministic. No
+        coordination with anyone else is needed.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The derivation pipeline</h2>
 
-      <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 font-mono text-sm space-y-2">
+      <div
+        class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 font-mono text-sm space-y-2"
+      >
         <div class="flex items-center gap-2">
           <span class="text-fips-muted w-32">Public Key</span>
           <span class="text-fips-text">(33 bytes, compressed secp256k1)</span>
@@ -51,13 +59,18 @@ import { quizzes } from "../../data/quizzes";
       </div>
 
       <p>
-        The node_addr is a one-way hash. Given a node_addr, you cannot recover the public key. This is the property that protects identity at the routing layer: intermediate routers see node_addrs in packet headers but cannot determine which npub (which person) the traffic belongs to. An observer who already knows your npub can check whether a particular node_addr is yours, but they cannot enumerate identities from traffic alone.
+        The node_addr is a one-way hash. Given a node_addr, you cannot recover the public key. This
+        is the property that protects identity at the routing layer: intermediate routers see
+        node_addrs in packet headers but cannot determine which npub (which person) the traffic
+        belongs to. An observer who already knows your npub can check whether a particular node_addr
+        is yours, but they cannot enumerate identities from traffic alone.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Try it yourself</h2>
 
       <p>
-        The widget below generates a real secp256k1 keypair in your browser and walks through the derivation. Each step produces a different representation of the same identity.
+        The widget below generates a real secp256k1 keypair in your browser and walks through the
+        derivation. Each step produces a different representation of the same identity.
       </p>
 
       <IdentityGenerator client:visible />
@@ -65,7 +78,8 @@ import { quizzes } from "../../data/quizzes";
       <h2 class="text-xl font-semibold mt-8 mb-4">Who sees what?</h2>
 
       <p>
-        Different actors in the network have access to different levels of identity information. This table summarizes what each can observe:
+        Different actors in the network have access to different levels of identity information.
+        This table summarizes what each can observe:
       </p>
 
       <div class="overflow-x-auto">
@@ -79,19 +93,27 @@ import { quizzes } from "../../data/quizzes";
           <tbody class="text-fips-text">
             <tr class="border-b border-fips-border/50">
               <td class="py-2 pr-4 font-medium">Transport observer</td>
-              <td class="py-2 text-fips-muted">Encrypted packets, timing, packet sizes. No FIPS-level identifiers.</td>
+              <td class="py-2 text-fips-muted"
+                >Encrypted packets, timing, packet sizes. No FIPS-level identifiers.</td
+              >
             </tr>
             <tr class="border-b border-fips-border/50">
               <td class="py-2 pr-4 font-medium">Direct peer</td>
-              <td class="py-2 text-fips-muted">Your npub (from Noise IK handshake), traffic volume, timing.</td>
+              <td class="py-2 text-fips-muted"
+                >Your npub (from Noise IK handshake), traffic volume, timing.</td
+              >
             </tr>
             <tr class="border-b border-fips-border/50">
               <td class="py-2 pr-4 font-medium">Intermediate router</td>
-              <td class="py-2 text-fips-muted">Source and destination node_addrs, packet size. Cannot read payload.</td>
+              <td class="py-2 text-fips-muted"
+                >Source and destination node_addrs, packet size. Cannot read payload.</td
+              >
             </tr>
             <tr>
               <td class="py-2 pr-4 font-medium">Destination</td>
-              <td class="py-2 text-fips-muted">Your npub (from Noise XK session), payload content.</td>
+              <td class="py-2 text-fips-muted"
+                >Your npub (from Noise XK session), payload content.</td
+              >
             </tr>
           </tbody>
         </table>
@@ -100,15 +122,20 @@ import { quizzes } from "../../data/quizzes";
       <h2 class="text-xl font-semibold mt-8 mb-4">Why Nostr keys?</h2>
 
       <p>
-        FIPS could have defined its own key format. Instead, it reuses the Nostr cryptographic stack: secp256k1 for keys, Schnorr signatures for authentication, SHA-256 for hashing, ChaCha20-Poly1305 for AEAD. This means an existing Nostr identity can serve as a FIPS node identity without generating anything new.
+        FIPS could have defined its own key format. Instead, it reuses the Nostr cryptographic
+        stack: secp256k1 for keys, Schnorr signatures for authentication, SHA-256 for hashing,
+        ChaCha20-Poly1305 for AEAD. This means an existing Nostr identity can serve as a FIPS node
+        identity without generating anything new.
       </p>
 
       <p>
-        Key rotation is straightforward but destructive: a new keypair produces a new node_addr and IPv6 address. All existing sessions must be re-established. There is no mechanism (yet) for announcing a successor key.
+        Key rotation is straightforward but destructive: a new keypair produces a new node_addr and
+        IPv6 address. All existing sessions must be re-established. There is no mechanism (yet) for
+        announcing a successor key.
       </p>
     </section>
 
-    <Quiz client:visible questions={quizzes["2-identity"]} title="Identity Quiz" />
+    <Quiz client:visible questions={getQuiz("2-identity")} title="Identity Quiz" />
 
     <LessonNav current={2} />
   </article>

@@ -36,7 +36,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "FSP wraps in session encryption",
-    description: "Noise XK encrypts the payload for node D. Only D can decrypt this layer. The session header carries a replay counter.",
+    description:
+      "Noise XK encrypts the payload for node D. Only D can decrypt this layer. The session header carries a replay counter.",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: false },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: true },
@@ -47,7 +48,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "FMP wraps in link encryption for A→B",
-    description: "Noise IK encrypts the entire FSP frame for the first hop. The outer header carries src/dest node_addrs for routing. Transport: WiFi.",
+    description:
+      "Noise IK encrypts the entire FSP frame for the first hop. The outer header carries src/dest node_addrs for routing. Transport: WiFi.",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: false },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: false },
@@ -58,7 +60,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "B receives: strip FMP, read routing header",
-    description: "Node B decrypts the link layer. It reads the destination node_addr from the routing header. D is not a direct peer, so B forwards. The FSP layer remains untouched (B cannot decrypt it).",
+    description:
+      "Node B decrypts the link layer. It reads the destination node_addr from the routing header. D is not a direct peer, so B forwards. The FSP layer remains untouched (B cannot decrypt it).",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: false },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: false },
@@ -69,7 +72,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "B re-wraps FMP for B→C",
-    description: "New link-layer encryption for the next hop. Different Noise IK session, different keys. Transport switches from WiFi to Ethernet.",
+    description:
+      "New link-layer encryption for the next hop. Different Noise IK session, different keys. Transport switches from WiFi to Ethernet.",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: false },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: false },
@@ -80,7 +84,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "C receives: strip FMP, re-wrap for C→D",
-    description: "Same process. C decrypts the B→C link layer, reads the routing header, and re-encrypts for C→D. Transport: UDP overlay.",
+    description:
+      "Same process. C decrypts the B→C link layer, reads the routing header, and re-encrypts for C→D. Transport: UDP overlay.",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: false },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: false },
@@ -91,7 +96,8 @@ const steps: JourneyStep[] = [
   },
   {
     title: "D receives: strip FMP, strip FSP, deliver payload",
-    description: "Node D decrypts the link layer (FMP) and recognizes itself as the destination. Then it decrypts the session layer (FSP) using its Noise XK session with A. The original payload is recovered.",
+    description:
+      "Node D decrypts the link layer (FMP) and recognizes itself as the destination. Then it decrypts the session layer (FSP) using its Noise XK session with A. The original payload is recovered.",
     layers: [
       { name: "Payload", color: "#8b5cf6", active: true },
       { name: "FSP (end-to-end)", color: "#3b82f6", active: true },
@@ -107,7 +113,7 @@ export default function PacketJourney() {
   const [playing, setPlaying] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const step = steps[stepIdx];
+  const step = steps[stepIdx]!;
 
   function play() {
     setPlaying(true);
@@ -134,12 +140,14 @@ export default function PacketJourney() {
           {/* Links */}
           {[0, 1, 2].map((i) => {
             const active = step.linkHighlight === i;
+            const a = nodes[i]!;
+            const b = nodes[i + 1]!;
             return (
               <line
                 key={i}
-                x1={nodes[i].x}
+                x1={a.x}
                 y1={50}
-                x2={nodes[i + 1].x}
+                x2={b.x}
                 y2={50}
                 stroke={active ? "#f59e0b" : "#1e2a3a"}
                 strokeWidth={active ? 3 : 1.5}
@@ -148,26 +156,30 @@ export default function PacketJourney() {
           })}
 
           {/* Transport labels */}
-          {[0, 1, 2].map((i) => (
-            <text
-              key={`t-${i}`}
-              x={(nodes[i].x + nodes[i + 1].x) / 2}
-              y={30}
-              textAnchor="middle"
-              fill="#8896ab"
-              fontSize="10"
-              fontFamily="monospace"
-            >
-              {nodes[i].transport}
-            </text>
-          ))}
+          {[0, 1, 2].map((i) => {
+            const a = nodes[i]!;
+            const b = nodes[i + 1]!;
+            return (
+              <text
+                key={`t-${i}`}
+                x={(a.x + b.x) / 2}
+                y={30}
+                textAnchor="middle"
+                fill="#8896ab"
+                fontSize="10"
+                fontFamily="monospace"
+              >
+                {a.transport}
+              </text>
+            );
+          })}
 
           {/* Packet indicator */}
           {step.linkHighlight >= 0 && (
             <motion.circle
               key={stepIdx}
-              initial={{ cx: nodes[step.linkHighlight].x, cy: 50 }}
-              animate={{ cx: nodes[step.linkHighlight + 1].x, cy: 50 }}
+              initial={{ cx: nodes[step.linkHighlight]!.x, cy: 50 }}
+              animate={{ cx: nodes[step.linkHighlight + 1]!.x, cy: 50 }}
               transition={{ duration: reduceMotion ? 0 : 1.2, ease: "easeInOut" }}
               r={6}
               fill="#f59e0b"
@@ -244,7 +256,10 @@ export default function PacketJourney() {
           className="rounded border border-fips-border p-3 mb-4"
         >
           <p className="font-semibold text-sm mb-1">
-            <span className="text-fips-accent font-mono">Step {stepIdx + 1}/{steps.length}:</span> {step.title}
+            <span className="text-fips-accent font-mono">
+              Step {stepIdx + 1}/{steps.length}:
+            </span>{" "}
+            {step.title}
           </p>
           <p className="text-sm text-fips-muted">{step.description}</p>
         </motion.div>

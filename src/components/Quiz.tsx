@@ -7,13 +7,13 @@ interface Props {
 }
 
 export default function Quiz({ questions, title = "Knowledge Check" }: Props) {
-  const [answers, setAnswers] = useState<(number | null)[]>(
-    () => new Array(questions.length).fill(null)
+  const [answers, setAnswers] = useState<(number | null)[]>(() =>
+    new Array(questions.length).fill(null)
   );
   const [submitted, setSubmitted] = useState(false);
 
   const score = answers.reduce<number>(
-    (acc, ans, i) => acc + (ans === questions[i].correctIndex ? 1 : 0),
+    (acc, ans, i) => acc + (ans === questions[i]?.correctIndex ? 1 : 0),
     0
   );
 

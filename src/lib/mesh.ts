@@ -4,7 +4,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 /** Compare two NodeAddrs lexicographically. Returns <0, 0, or >0. */
 export function compareNodeAddr(a: NodeAddr, b: NodeAddr): number {
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
-    if (a[i] !== b[i]) return a[i] - b[i];
+    if (a[i] !== b[i]) return a[i]! - b[i]!;
   }
   return a.length - b.length;
 }
@@ -24,10 +24,7 @@ export function nodeAddrFromId(id: string): NodeAddr {
 }
 
 /** Compute a node's tree coordinate: [self, parent, ..., root] */
-export function computeCoordinate(
-  nodeId: string,
-  nodes: Map<string, MeshNode>
-): NodeAddr[] {
+export function computeCoordinate(nodeId: string, nodes: Map<string, MeshNode>): NodeAddr[] {
   const coords: NodeAddr[] = [];
   let current = nodeId;
   const visited = new Set<string>();
@@ -51,13 +48,13 @@ export function treeDistance(coordsA: NodeAddr[], coordsB: NodeAddr[]): number {
   let commonLen = 0;
   let ia = coordsA.length - 1;
   let ib = coordsB.length - 1;
-  while (ia >= 0 && ib >= 0 && nodeAddrEqual(coordsA[ia], coordsB[ib])) {
+  while (ia >= 0 && ib >= 0 && nodeAddrEqual(coordsA[ia]!, coordsB[ib]!)) {
     commonLen++;
     ia--;
     ib--;
   }
   if (commonLen === 0) return Infinity; // different trees
-  return (coordsA.length - commonLen) + (coordsB.length - commonLen);
+  return coordsA.length - commonLen + (coordsB.length - commonLen);
 }
 
 /**
@@ -164,12 +161,16 @@ export function findNextHop(
 }
 
 /** Create a set of demo nodes with random positions. */
-export function createDemoNodes(count: number, width: number, height: number): Map<string, MeshNode> {
+export function createDemoNodes(
+  count: number,
+  width: number,
+  height: number
+): Map<string, MeshNode> {
   const nodes = new Map<string, MeshNode>();
   const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const padding = 60;
   for (let i = 0; i < Math.min(count, 26); i++) {
-    const id = labels[i];
+    const id = labels[i]!;
     nodes.set(id, {
       id,
       nodeAddr: nodeAddrFromId(id),
@@ -192,18 +193,18 @@ export function createDemoLinks(nodes: Map<string, MeshNode>, extraLinkChance = 
   // First, build a random spanning tree to guarantee connectivity
   const shuffled = [...ids].sort(() => Math.random() - 0.5);
   for (let i = 1; i < shuffled.length; i++) {
-    const connectTo = shuffled[Math.floor(Math.random() * i)];
-    links.push({ a: shuffled[i], b: connectTo });
+    const connectTo = shuffled[Math.floor(Math.random() * i)]!;
+    links.push({ a: shuffled[i]!, b: connectTo });
   }
 
   // Add extra mesh links
   for (let i = 0; i < ids.length; i++) {
     for (let j = i + 2; j < ids.length; j++) {
-      const exists = links.some(
-        (l) => (l.a === ids[i] && l.b === ids[j]) || (l.a === ids[j] && l.b === ids[i])
-      );
+      const a = ids[i]!;
+      const b = ids[j]!;
+      const exists = links.some((l) => (l.a === a && l.b === b) || (l.a === b && l.b === a));
       if (!exists && Math.random() < extraLinkChance) {
-        links.push({ a: ids[i], b: ids[j] });
+        links.push({ a, b });
       }
     }
   }

@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import Quiz from "../../components/Quiz";
-import { quizzes } from "../../data/quizzes";
+import { getQuiz } from "../../data/quizzes";
 ---
 
 <Base title="Putting It Together">
@@ -12,13 +12,20 @@ import { quizzes } from "../../data/quizzes";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        You now know the individual parts: identity derivation, the protocol stack, transports, spanning tree routing, bloom filters, and the two encryption layers. This lesson walks through a concrete scenario that ties everything together: what happens when you <code class="mono text-fips-accent">ping npub1abc...def.fips</code> from a cold-started node.
+        You now know the individual parts: identity derivation, the protocol stack, transports,
+        spanning tree routing, bloom filters, and the two encryption layers. This lesson walks
+        through a concrete scenario that ties everything together: what happens when you <code
+          class="mono text-fips-accent">ping npub1abc...def.fips</code
+        > from a cold-started node.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The scenario</h2>
 
       <p>
-        Your node (call it <strong>Alice</strong>) has just started. It has one configured peer (<strong>Bob</strong>) reachable via UDP. You want to reach <strong>Zara</strong>, who is somewhere else in the mesh. You know her npub but have no idea where she is.
+        Your node (call it <strong>Alice</strong>) has just started. It has one configured peer (<strong
+          >Bob</strong
+        >) reachable via UDP. You want to reach <strong>Zara</strong>, who is somewhere else in the
+        mesh. You know her npub but have no idea where she is.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Step-by-step walkthrough</h2>
@@ -26,88 +33,138 @@ import { quizzes } from "../../data/quizzes";
       <div class="space-y-4">
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">1</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >1</span
+            >
             <h3 class="font-semibold">Transport connects to Bob</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Alice's UDP transport opens a socket and sends a FIPS handshake to Bob's IP:port. At this point, Alice knows only the transport address, not Bob's FIPS identity.
+            Alice's UDP transport opens a socket and sends a FIPS handshake to Bob's IP:port. At
+            this point, Alice knows only the transport address, not Bob's FIPS identity.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">2</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >2</span
+            >
             <h3 class="font-semibold">FMP Noise IK handshake with Bob</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Alice initiates a Noise IK handshake. She sends her npub encrypted under Bob's public key. Bob responds, proving he holds the corresponding private key. Both sides derive link encryption keys. The peer link is now authenticated and encrypted.
+            Alice initiates a Noise IK handshake. She sends her npub encrypted under Bob's public
+            key. Bob responds, proving he holds the corresponding private key. Both sides derive
+            link encryption keys. The peer link is now authenticated and encrypted.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">3</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >3</span
+            >
             <h3 class="font-semibold">Spanning tree bootstrap</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Alice and Bob exchange tree state: root node_addr, depth, and cost. If Bob already belongs to a tree, Alice evaluates Bob as a potential parent. If Alice's node_addr is smaller than the current root, she becomes the new root (and Bob may update his tree state too). Within a few exchanges, Alice has a tree coordinate.
+            Alice and Bob exchange tree state: root node_addr, depth, and cost. If Bob already
+            belongs to a tree, Alice evaluates Bob as a potential parent. If Alice's node_addr is
+            smaller than the current root, she becomes the new root (and Bob may update his tree
+            state too). Within a few exchanges, Alice has a tree coordinate.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">4</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >4</span
+            >
             <h3 class="font-semibold">DNS resolves the .fips name</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            The <code class="mono text-fips-accent">ping</code> command triggers a DNS lookup for <code class="mono">npub1abc...def.fips</code>. The FIPS DNS resolver recognizes the <code class="mono">.fips</code> TLD and derives Zara's IPv6 address from her npub: hash the x-only public key to get <code class="mono">node_addr</code>, then prepend <code class="mono">0xfd</code>. No external DNS server is contacted.
+            The <code class="mono text-fips-accent">ping</code> command triggers a DNS lookup for <code
+              class="mono">npub1abc...def.fips</code
+            >. The FIPS DNS resolver recognizes the <code class="mono">.fips</code> TLD and derives Zara's
+            IPv6 address from her npub: hash the x-only public key to get <code class="mono"
+              >node_addr</code
+            >, then prepend <code class="mono">0xfd</code>. No external DNS server is contacted.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">5</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >5</span
+            >
             <h3 class="font-semibold">Coordinate lookup: where is Zara?</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Alice knows Zara's node_addr but not her tree coordinates. She sends a LookupRequest, which propagates through the mesh via bloom-guided tree routing. When a node that knows Zara's coordinates receives this request, it replies with a LookupResponse containing the coordinates. Alice caches the result.
+            Alice knows Zara's node_addr but not her tree coordinates. She sends a LookupRequest,
+            which propagates through the mesh via bloom-guided tree routing. When a node that knows
+            Zara's coordinates receives this request, it replies with a LookupResponse containing
+            the coordinates. Alice caches the result.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">6</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >6</span
+            >
             <h3 class="font-semibold">Session setup (Noise XK)</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Alice initiates a Noise XK handshake with Zara. The SessionSetup messages travel through the mesh, and each transit node caches the source and destination coordinates it finds in the routing envelope. This "warms up" the coordinate caches along the path, speeding up future routing.
+            Alice initiates a Noise XK handshake with Zara. The SessionSetup messages travel through
+            the mesh, and each transit node caches the source and destination coordinates it finds
+            in the routing envelope. This "warms up" the coordinate caches along the path, speeding
+            up future routing.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">7</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >7</span
+            >
             <h3 class="font-semibold">Data flows</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            The ICMP echo request from <code class="mono">ping</code> is encapsulated as an IPv6 packet, compressed by the IPv6 adapter (stripping the header and replacing it with a 4-byte port header), encrypted by FSP, wrapped in FMP link encryption, and sent toward Zara's coordinates. Each transit router decrypts the FMP layer, reads the destination, re-encrypts, and forwards. Zara strips both layers and replies. Ping succeeds.
+            The ICMP echo request from <code class="mono">ping</code> is encapsulated as an IPv6 packet,
+            compressed by the IPv6 adapter (stripping the header and replacing it with a 4-byte port header),
+            encrypted by FSP, wrapped in FMP link encryption, and sent toward Zara's coordinates. Each
+            transit router decrypts the FMP layer, reads the destination, re-encrypts, and forwards. Zara
+            strips both layers and replies. Ping succeeds.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
           <div class="flex items-center gap-2 mb-2">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold">8</span>
+            <span
+              class="flex-shrink-0 w-7 h-7 rounded-full bg-fips-accent/10 text-fips-accent flex items-center justify-center font-mono text-xs font-bold"
+              >8</span
+            >
             <h3 class="font-semibold">Steady state</h3>
           </div>
           <p class="text-sm text-fips-muted ml-9">
-            Subsequent packets to Zara skip steps 4-6: the coordinate and session are already cached. MMP periodically measures link quality. The spanning tree may re-converge if links change. Bloom filters are refreshed. But from Alice's application perspective, traffic flows like any IPv6 connection.
+            Subsequent packets to Zara skip steps 4-6: the coordinate and session are already
+            cached. MMP periodically measures link quality. The spanning tree may re-converge if
+            links change. Bloom filters are refreshed. But from Alice's application perspective,
+            traffic flows like any IPv6 connection.
           </p>
         </div>
       </div>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The lifecycle, summarized</h2>
 
-      <div class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm space-y-1">
+      <div
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm space-y-1"
+      >
         <div class="text-fips-muted">Cold start</div>
         <div class="pl-4 text-amber-400">→ Transport connection (UDP socket to peer)</div>
         <div class="pl-4 text-green-400">→ FMP handshake (Noise IK, link authenticated)</div>
@@ -124,22 +181,41 @@ import { quizzes } from "../../data/quizzes";
       <h2 class="text-xl font-semibold mt-8 mb-4">Where to go from here</h2>
 
       <div class="space-y-3">
-        <a href="https://github.com/jmcorgan/fips" target="_blank" rel="noopener" class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors">
+        <a
+          href="https://github.com/jmcorgan/fips"
+          target="_blank"
+          rel="noopener"
+          class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors"
+        >
           <span class="font-semibold text-fips-accent">GitHub: jmcorgan/fips</span>
-          <p class="text-sm text-fips-muted mt-1">The reference implementation. Rust codebase with the full protocol.</p>
+          <p class="text-sm text-fips-muted mt-1">
+            The reference implementation. Rust codebase with the full protocol.
+          </p>
         </a>
-        <a href="https://github.com/jmcorgan/fips/tree/master/docs/design" target="_blank" rel="noopener" class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors">
+        <a
+          href="https://github.com/jmcorgan/fips/tree/master/docs/design"
+          target="_blank"
+          rel="noopener"
+          class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors"
+        >
           <span class="font-semibold text-fips-accent">Protocol Specifications</span>
-          <p class="text-sm text-fips-muted mt-1">The full design documents: wire formats, algorithms, security analysis.</p>
+          <p class="text-sm text-fips-muted mt-1">
+            The full design documents: wire formats, algorithms, security analysis.
+          </p>
         </a>
-        <a href="https://fips.network" target="_blank" rel="noopener" class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors">
+        <a
+          href="https://fips.network"
+          target="_blank"
+          rel="noopener"
+          class="block rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors"
+        >
           <span class="font-semibold text-fips-accent">fips.network</span>
           <p class="text-sm text-fips-muted mt-1">The official FIPS website.</p>
         </a>
       </div>
     </section>
 
-    <Quiz client:visible questions={quizzes["7-putting-it-together"]} title="Final Quiz" />
+    <Quiz client:visible questions={getQuiz("7-putting-it-together")} title="Final Quiz" />
 
     <LessonNav current={7} />
   </article>

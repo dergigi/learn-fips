@@ -42,7 +42,10 @@ const fullTitle = `${title} | Learn FIPS`;
     <meta name="twitter:image" content={ogImageUrl} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <title>{fullTitle}</title>
   </head>
   <body class="flex flex-col min-h-dvh">
@@ -53,21 +56,25 @@ const fullTitle = `${title} | Learn FIPS`;
           <span>Learn FIPS</span>
         </a>
         <div class="hidden md:flex items-center gap-1 text-sm">
-          {lessons.map((l) => {
-            const href = `/lessons/${l.slug}`;
-            const active = currentPath.startsWith(href);
-            return (
-              <a
-                href={href}
-                class:list={[
-                  "px-2 py-1 rounded transition-colors",
-                  active ? "text-fips-accent bg-fips-accent/10" : "text-fips-muted hover:text-fips-text",
-                ]}
-              >
-                {l.number}
-              </a>
-            );
-          })}
+          {
+            lessons.map((l) => {
+              const href = `/lessons/${l.slug}`;
+              const active = currentPath.startsWith(href);
+              return (
+                <a
+                  href={href}
+                  class:list={[
+                    "px-2 py-1 rounded transition-colors",
+                    active
+                      ? "text-fips-accent bg-fips-accent/10"
+                      : "text-fips-muted hover:text-fips-text",
+                  ]}
+                >
+                  {l.number}
+                </a>
+              );
+            })
+          }
         </div>
         <div class="flex items-center gap-3">
           <a
@@ -86,33 +93,47 @@ const fullTitle = `${title} | Learn FIPS`;
             aria-expanded="false"
             aria-controls="mobile-menu"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-              <line x1="3" y1="5" x2="17" y2="5" />
-              <line x1="3" y1="10" x2="17" y2="10" />
-              <line x1="3" y1="15" x2="17" y2="15" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="3" y1="5" x2="17" y2="5"></line>
+              <line x1="3" y1="10" x2="17" y2="10"></line>
+              <line x1="3" y1="15" x2="17" y2="15"></line>
             </svg>
           </button>
         </div>
       </div>
 
       <!-- Mobile dropdown -->
-      <div id="mobile-menu" class="hidden md:hidden border-t border-fips-border bg-fips-surface px-4 py-3">
+      <div
+        id="mobile-menu"
+        class="hidden md:hidden border-t border-fips-border bg-fips-surface px-4 py-3"
+      >
         <div class="grid grid-cols-2 gap-2">
-          {lessons.map((l) => {
-            const href = `/lessons/${l.slug}`;
-            const active = currentPath.startsWith(href);
-            return (
-              <a
-                href={href}
-                class:list={[
-                  "px-3 py-2 rounded text-sm transition-colors",
-                  active ? "text-fips-accent bg-fips-accent/10" : "text-fips-muted hover:text-fips-text hover:bg-fips-surface",
-                ]}
-              >
-                <span class="font-mono text-xs mr-1">{l.number}.</span> {l.title}
-              </a>
-            );
-          })}
+          {
+            lessons.map((l) => {
+              const href = `/lessons/${l.slug}`;
+              const active = currentPath.startsWith(href);
+              return (
+                <a
+                  href={href}
+                  class:list={[
+                    "px-3 py-2 rounded text-sm transition-colors",
+                    active
+                      ? "text-fips-accent bg-fips-accent/10"
+                      : "text-fips-muted hover:text-fips-text hover:bg-fips-surface",
+                  ]}
+                >
+                  <span class="font-mono text-xs mr-1">{l.number}.</span> {l.title}
+                </a>
+              );
+            })
+          }
         </div>
       </div>
     </nav>
@@ -123,8 +144,17 @@ const fullTitle = `${title} | Learn FIPS`;
 
     <footer class="border-t border-fips-border py-8 text-center text-fips-muted text-sm">
       <p>
-        Built to teach <a href="https://fips.network" target="_blank" rel="noopener" class="text-fips-accent hover:underline">FIPS</a>.
-        Protocol specs at <a href="https://github.com/jmcorgan/fips/tree/master/docs/design" target="_blank" rel="noopener" class="text-fips-accent hover:underline">docs/design</a>.
+        Built to teach <a
+          href="https://fips.network"
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent hover:underline">FIPS</a
+        >. Protocol specs at <a
+          href="https://github.com/jmcorgan/fips/tree/master/docs/design"
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent hover:underline">docs/design</a
+        >.
       </p>
     </footer>
 
@@ -139,7 +169,7 @@ const fullTitle = `${title} | Learn FIPS`;
       // Mark current lesson as visited in localStorage
       const path = window.location.pathname;
       const match = path.match(/\/lessons\/(\d+)-/);
-      if (match) {
+      if (match && match[1]) {
         const visited = JSON.parse(localStorage.getItem("fips-visited") || "[]");
         const num = parseInt(match[1], 10);
         if (!visited.includes(num)) {

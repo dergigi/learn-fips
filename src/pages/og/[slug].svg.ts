@@ -56,10 +56,7 @@ function wrap(text: string, maxChars: number, maxLines: number): string[] {
 function render(card: Card): string {
   const subtitleLines = wrap(card.subtitle, 58, 3);
   const subtitleText = subtitleLines
-    .map(
-      (line, i) =>
-        `<tspan x="80" dy="${i === 0 ? 0 : 44}">${escape(line)}</tspan>`
-    )
+    .map((line, i) => `<tspan x="80" dy="${i === 0 ? 0 : 44}">${escape(line)}</tspan>`)
     .join("");
 
   return `<?xml version="1.0" encoding="UTF-8"?>

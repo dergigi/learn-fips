@@ -108,27 +108,43 @@ export default function RoutingDemo() {
 
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
-      <h3 className="text-lg font-semibold mb-3">Routing Decision: <code className="font-mono text-fips-accent">find_next_hop()</code></h3>
+      <h3 className="text-lg font-semibold mb-3">
+        Routing Decision: <code className="font-mono text-fips-accent">find_next_hop()</code>
+      </h3>
 
       <div className="flex flex-wrap gap-3 mb-4 text-sm">
         <label className="flex items-center gap-2">
           <span className="text-fips-muted">Source:</span>
           <select
             value={source}
-            onChange={(e) => { setSource(e.target.value); setStepIndex(0); }}
+            onChange={(e) => {
+              setSource(e.target.value);
+              setStepIndex(0);
+            }}
             className="bg-fips-bg border border-fips-border rounded px-2 py-1 text-fips-text font-mono"
           >
-            {nodeIds.map((id) => <option key={id} value={id}>{id} ({shortAddr(nodes.get(id)!.nodeAddr)})</option>)}
+            {nodeIds.map((id) => (
+              <option key={id} value={id}>
+                {id} ({shortAddr(nodes.get(id)!.nodeAddr)})
+              </option>
+            ))}
           </select>
         </label>
         <label className="flex items-center gap-2">
           <span className="text-fips-muted">Dest:</span>
           <select
             value={dest}
-            onChange={(e) => { setDest(e.target.value); setStepIndex(0); }}
+            onChange={(e) => {
+              setDest(e.target.value);
+              setStepIndex(0);
+            }}
             className="bg-fips-bg border border-fips-border rounded px-2 py-1 text-fips-text font-mono"
           >
-            {nodeIds.map((id) => <option key={id} value={id}>{id} ({shortAddr(nodes.get(id)!.nodeAddr)})</option>)}
+            {nodeIds.map((id) => (
+              <option key={id} value={id}>
+                {id} ({shortAddr(nodes.get(id)!.nodeAddr)})
+              </option>
+            ))}
           </select>
         </label>
       </div>
@@ -150,7 +166,9 @@ export default function RoutingDemo() {
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-fips-accent font-mono text-xs">#{i + 1}</span>
                 <span className="font-semibold">{step.label}</span>
-                {step.fired && visible && <span className="text-fips-green text-xs ml-auto">FIRED</span>}
+                {step.fired && visible && (
+                  <span className="text-fips-green text-xs ml-auto">FIRED</span>
+                )}
               </div>
               {visible && (
                 <div className="mt-1 text-sm text-fips-muted font-mono">

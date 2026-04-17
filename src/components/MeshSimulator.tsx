@@ -1,5 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { buildSpanningTree, createDemoNodes, createDemoLinks, findNextHop, compareNodeAddr } from "../lib/mesh";
+import {
+  buildSpanningTree,
+  createDemoNodes,
+  createDemoLinks,
+  findNextHop,
+  compareNodeAddr,
+} from "../lib/mesh";
 import { hexEncode } from "../lib/crypto";
 import type { MeshNode, Link } from "../lib/types";
 
@@ -13,7 +19,9 @@ function shortAddr(addr: Uint8Array): string {
 
 export default function MeshSimulator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [nodes, setNodes] = useState<Map<string, MeshNode>>(() => createDemoNodes(10, WIDTH, HEIGHT));
+  const [nodes, setNodes] = useState<Map<string, MeshNode>>(() =>
+    createDemoNodes(10, WIDTH, HEIGHT)
+  );
   const [links, setLinks] = useState<Link[]>(() => createDemoLinks(nodes));
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [routeFrom, setRouteFrom] = useState<string | null>(null);
@@ -22,7 +30,9 @@ export default function MeshSimulator() {
   const [showCoords, setShowCoords] = useState(false);
 
   const rebuild = useCallback((n: Map<string, MeshNode>, l: Link[]) => {
-    const copy = new Map(Array.from(n.entries()).map(([k, v]) => [k, { ...v, peers: new Set(v.peers) }]));
+    const copy = new Map(
+      Array.from(n.entries()).map(([k, v]) => [k, { ...v, peers: new Set(v.peers) }])
+    );
     buildSpanningTree(copy, l);
     return copy;
   }, []);
@@ -32,10 +42,11 @@ export default function MeshSimulator() {
     setNodes(built);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const rootId = Array.from(nodes.values()).reduce<MeshNode | null>((best, n) => {
-    if (!best || compareNodeAddr(n.nodeAddr, best.nodeAddr) < 0) return n;
-    return best;
-  }, null)?.id ?? null;
+  const rootId =
+    Array.from(nodes.values()).reduce<MeshNode | null>((best, n) => {
+      if (!best || compareNodeAddr(n.nodeAddr, best.nodeAddr) < 0) return n;
+      return best;
+    }, null)?.id ?? null;
 
   const treeEdges = new Set<string>();
   for (const node of nodes.values()) {
@@ -67,11 +78,13 @@ export default function MeshSimulator() {
       if (!a || !b) continue;
       const key = [link.a, link.b].sort().join("-");
       const isTree = treeEdges.has(key);
-      const isRoute = routePath.length > 0 && routePath.some((id, i) => {
-        const next = routePath[i + 1];
-        if (!next) return false;
-        return (id === link.a && next === link.b) || (id === link.b && next === link.a);
-      });
+      const isRoute =
+        routePath.length > 0 &&
+        routePath.some((id, i) => {
+          const next = routePath[i + 1];
+          if (!next) return false;
+          return (id === link.a && next === link.b) || (id === link.b && next === link.a);
+        });
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
@@ -114,7 +127,13 @@ export default function MeshSimulator() {
       }
       ctx.fill();
 
-      ctx.strokeStyle = isRoot ? "#22d3ee" : isSelected ? "#60a5fa" : inRoute ? "#f59e0b" : "#2d3a4f";
+      ctx.strokeStyle = isRoot
+        ? "#22d3ee"
+        : isSelected
+          ? "#60a5fa"
+          : inRoute
+            ? "#f59e0b"
+            : "#2d3a4f";
       ctx.lineWidth = isRoot || isSelected ? 2.5 : 1.5;
       ctx.stroke();
 
@@ -173,8 +192,14 @@ export default function MeshSimulator() {
     if (!dragging) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const x = Math.max(NODE_RADIUS, Math.min(WIDTH - NODE_RADIUS, (e.clientX - rect.left) * (WIDTH / rect.width)));
-    const y = Math.max(NODE_RADIUS, Math.min(HEIGHT - NODE_RADIUS, (e.clientY - rect.top) * (HEIGHT / rect.height)));
+    const x = Math.max(
+      NODE_RADIUS,
+      Math.min(WIDTH - NODE_RADIUS, (e.clientX - rect.left) * (WIDTH / rect.width))
+    );
+    const y = Math.max(
+      NODE_RADIUS,
+      Math.min(HEIGHT - NODE_RADIUS, (e.clientY - rect.top) * (HEIGHT / rect.height))
+    );
 
     setNodes((prev) => {
       const copy = new Map(prev);
@@ -222,20 +247,32 @@ export default function MeshSimulator() {
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Mesh Simulator</h3>
         <div className="flex gap-2 text-xs">
-          <button onClick={() => setShowCoords(!showCoords)} className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors">
+          <button
+            onClick={() => setShowCoords(!showCoords)}
+            className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
+          >
             {showCoords ? "Hide" : "Show"} Coords
           </button>
           <button
-            onClick={() => { setRouteFrom(selectedNode); setRoutePath([]); }}
+            onClick={() => {
+              setRouteFrom(selectedNode);
+              setRoutePath([]);
+            }}
             disabled={!selectedNode}
             className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors disabled:opacity-30"
           >
             Route From {selectedNode || "..."}
           </button>
-          <button onClick={killRandomLink} className="px-2 py-1 rounded border border-fips-border hover:border-fips-red/40 text-fips-red transition-colors">
+          <button
+            onClick={killRandomLink}
+            className="px-2 py-1 rounded border border-fips-border hover:border-fips-red/40 text-fips-red transition-colors"
+          >
             Kill Link
           </button>
-          <button onClick={reset} className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors">
+          <button
+            onClick={reset}
+            className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
+          >
             Reset
           </button>
         </div>
@@ -262,29 +299,47 @@ export default function MeshSimulator() {
       />
 
       <div className="mt-3 flex gap-4 text-xs text-fips-muted">
-        <span className="flex items-center gap-1"><span className="w-4 h-0.5 bg-fips-accent inline-block" /> tree edge</span>
-        <span className="flex items-center gap-1"><span className="w-4 h-0.5 bg-fips-border inline-block border-t border-dashed border-fips-muted" /> mesh edge</span>
-        <span className="flex items-center gap-1"><span className="w-4 h-0.5 bg-fips-highlight inline-block" /> route</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fips-accent-dim inline-block border border-fips-accent" /> root</span>
+        <span className="flex items-center gap-1">
+          <span className="w-4 h-0.5 bg-fips-accent inline-block" /> tree edge
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-4 h-0.5 bg-fips-border inline-block border-t border-dashed border-fips-muted" />{" "}
+          mesh edge
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-4 h-0.5 bg-fips-highlight inline-block" /> route
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-fips-accent-dim inline-block border border-fips-accent" />{" "}
+          root
+        </span>
       </div>
 
       {selectedInfo && (
         <div className="mt-3 rounded border border-fips-border p-3 text-sm font-mono">
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <span className="text-fips-muted">Node:</span><span>{selectedInfo.id}</span>
-            <span className="text-fips-muted">node_addr:</span><span>{shortAddr(selectedInfo.nodeAddr)}</span>
-            <span className="text-fips-muted">Parent:</span><span>{selectedInfo.parent === selectedInfo.id ? "(root)" : selectedInfo.parent}</span>
-            <span className="text-fips-muted">Depth:</span><span>{selectedInfo.coords.length > 0 ? selectedInfo.coords.length - 1 : "?"}</span>
-            <span className="text-fips-muted">Peers:</span><span>{Array.from(selectedInfo.peers).join(", ")}</span>
+            <span className="text-fips-muted">Node:</span>
+            <span>{selectedInfo.id}</span>
+            <span className="text-fips-muted">node_addr:</span>
+            <span>{shortAddr(selectedInfo.nodeAddr)}</span>
+            <span className="text-fips-muted">Parent:</span>
+            <span>{selectedInfo.parent === selectedInfo.id ? "(root)" : selectedInfo.parent}</span>
+            <span className="text-fips-muted">Depth:</span>
+            <span>{selectedInfo.coords.length > 0 ? selectedInfo.coords.length - 1 : "?"}</span>
+            <span className="text-fips-muted">Peers:</span>
+            <span>{Array.from(selectedInfo.peers).join(", ")}</span>
             <span className="text-fips-muted">Coords:</span>
-            <span className="break-all">{selectedInfo.coords.map((c) => shortAddr(c)).join(" → ")}</span>
+            <span className="break-all">
+              {selectedInfo.coords.map((c) => shortAddr(c)).join(" → ")}
+            </span>
           </div>
         </div>
       )}
 
       {routePath.length > 1 && (
         <div className="mt-2 text-xs font-mono text-fips-highlight">
-          Route: {routePath.join(" → ")} ({routePath.length - 1} hop{routePath.length - 1 !== 1 ? "s" : ""})
+          Route: {routePath.join(" → ")} ({routePath.length - 1} hop
+          {routePath.length - 1 !== 1 ? "s" : ""})
         </div>
       )}
     </div>

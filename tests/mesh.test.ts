@@ -117,7 +117,7 @@ describe("findNextHop", () => {
     const ids = ["A", "B", "C", "D", "E", "F", "G", "H"];
     const links: Link[] = [];
     // Build a chain plus a few shortcuts
-    for (let i = 1; i < ids.length; i++) links.push({ a: ids[i - 1], b: ids[i] });
+    for (let i = 1; i < ids.length; i++) links.push({ a: ids[i - 1]!, b: ids[i]! });
     links.push({ a: "B", b: "E" });
     links.push({ a: "D", b: "G" });
     const nodes = makeMesh(ids, links);
@@ -153,7 +153,7 @@ describe("createDemoNodes + createDemoLinks", () => {
       adj.get(l.b)!.add(l.a);
     }
     // BFS from the first node reaches everybody.
-    const start = [...nodes.keys()][0];
+    const start = [...nodes.keys()][0]!;
     const visited = new Set<string>([start]);
     const queue = [start];
     while (queue.length) {

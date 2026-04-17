@@ -19,7 +19,7 @@ export class BloomFilter {
       input.set(item);
       input[item.length] = i;
       const hash = sha256(input);
-      const val = (hash[0] << 24) | (hash[1] << 16) | (hash[2] << 8) | hash[3];
+      const val = (hash[0]! << 24) | (hash[1]! << 16) | (hash[2]! << 8) | hash[3]!;
       indices.push(Math.abs(val) % this.bitCount);
     }
     return indices;
@@ -27,14 +27,14 @@ export class BloomFilter {
 
   insert(item: Uint8Array): void {
     for (const idx of this.hashIndices(item)) {
-      this.bits[idx >> 3] |= 1 << (idx & 7);
+      this.bits[idx >> 3]! |= 1 << (idx & 7);
     }
     this.insertions++;
   }
 
   query(item: Uint8Array): boolean {
     for (const idx of this.hashIndices(item)) {
-      if (!(this.bits[idx >> 3] & (1 << (idx & 7)))) return false;
+      if (!(this.bits[idx >> 3]! & (1 << (idx & 7)))) return false;
     }
     return true;
   }
@@ -69,7 +69,7 @@ export class BloomFilter {
     }
     const merged = new BloomFilter(a.bits.length, a.hashCount);
     for (let i = 0; i < a.bits.length; i++) {
-      merged.bits[i] = a.bits[i] | b.bits[i];
+      merged.bits[i] = a.bits[i]! | b.bits[i]!;
     }
     return merged;
   }

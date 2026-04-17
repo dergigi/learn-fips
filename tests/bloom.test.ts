@@ -72,7 +72,7 @@ describe("BloomFilter", () => {
       ratios.push(bf.fillRatio);
     }
     for (let i = 1; i < ratios.length; i++) {
-      expect(ratios[i]).toBeGreaterThanOrEqual(ratios[i - 1]);
+      expect(ratios[i]!).toBeGreaterThanOrEqual(ratios[i - 1]!);
     }
   });
 });

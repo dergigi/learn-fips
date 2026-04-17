@@ -10,11 +10,18 @@ import LessonNav from "../../components/LessonNav.astro";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        The internet you use every day depends on a stack of centralized infrastructure: ISPs, backbone providers, DNS servers, certificate authorities. If any of these go down or start behaving badly, the network breaks. Your device cannot talk to another device without multiple intermediaries coordinating the connection.
+        The internet you use every day depends on a stack of centralized infrastructure: ISPs,
+        backbone providers, DNS servers, certificate authorities. If any of these go down or start
+        behaving badly, the network breaks. Your device cannot talk to another device without
+        multiple intermediaries coordinating the connection.
       </p>
 
       <p>
-        <strong class="text-fips-accent">FIPS</strong> (Free Internetworking Peering System) takes a different approach. It is a mesh protocol where nodes connect directly to each other, authenticate using cryptographic keypairs, and route traffic cooperatively. There is no central authority assigning addresses or managing routing tables. Each node generates its own identity from a keypair and joins the mesh by connecting to a single peer.
+        <strong class="text-fips-accent">FIPS</strong> (Free Internetworking Peering System) takes a different
+        approach. It is a mesh protocol where nodes connect directly to each other, authenticate using
+        cryptographic keypairs, and route traffic cooperatively. There is no central authority assigning
+        addresses or managing routing tables. Each node generates its own identity from a keypair and
+        joins the mesh by connecting to a single peer.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Four properties that matter</h2>
@@ -23,28 +30,39 @@ import LessonNav from "../../components/LessonNav.astro";
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/50">
           <h3 class="font-semibold text-fips-accent mb-1">Transport agnostic</h3>
           <p class="text-sm text-fips-muted">
-            FIPS runs over WiFi, Ethernet, Bluetooth, UDP overlays, serial links, satellite uplinks, and Tor circuits. The protocol treats the communication medium as a pluggable driver. A node running multiple transports bridges between them automatically. Peers on WiFi and peers on Ethernet join the same mesh.
+            FIPS runs over WiFi, Ethernet, Bluetooth, UDP overlays, serial links, satellite uplinks,
+            and Tor circuits. The protocol treats the communication medium as a pluggable driver. A
+            node running multiple transports bridges between them automatically. Peers on WiFi and
+            peers on Ethernet join the same mesh.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/50">
           <h3 class="font-semibold text-fips-accent mb-1">Self-organizing</h3>
           <p class="text-sm text-fips-muted">
-            Connect to one peer and you can reach the entire network. Nodes discover each other, build a spanning tree for coordinate-based routing, exchange bloom filters for reachability, and forward traffic. The network heals around failures and adapts to topology changes without anyone telling it to.
+            Connect to one peer and you can reach the entire network. Nodes discover each other,
+            build a spanning tree for coordinate-based routing, exchange bloom filters for
+            reachability, and forward traffic. The network heals around failures and adapts to
+            topology changes without anyone telling it to.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/50">
           <h3 class="font-semibold text-fips-accent mb-1">Nostr-native identity</h3>
           <p class="text-sm text-fips-muted">
-            Your node identity is a Nostr keypair (secp256k1). From that single keypair, FIPS deterministically derives your application identity (npub), your routing address (node_addr), and an IPv6 address for legacy app compatibility. No registration. No certificate authority. Generate a key, join the mesh.
+            Your node identity is a Nostr keypair (secp256k1). From that single keypair, FIPS
+            deterministically derives your application identity (npub), your routing address
+            (node_addr), and an IPv6 address for legacy app compatibility. No registration. No
+            certificate authority. Generate a key, join the mesh.
           </p>
         </div>
 
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/50">
           <h3 class="font-semibold text-fips-accent mb-1">Privacy by design</h3>
           <p class="text-sm text-fips-muted">
-            Every link is encrypted hop-by-hop (Noise IK). Every session is encrypted end-to-end (Noise XK). Intermediate routers forward packets without knowing who is talking to whom. They see only opaque routing hashes, not Nostr identities.
+            Every link is encrypted hop-by-hop (Noise IK). Every session is encrypted end-to-end
+            (Noise XK). Intermediate routers forward packets without knowing who is talking to whom.
+            They see only opaque routing hashes, not Nostr identities.
           </p>
         </div>
       </div>
@@ -93,28 +111,43 @@ import LessonNav from "../../components/LessonNav.astro";
       <h2 class="text-xl font-semibold mt-8 mb-4">The protocol stack at a glance</h2>
 
       <p>
-        FIPS is organized into four layers. Each one has a single job and knows nothing about the layers above or below it. We will explore each in detail through these lessons.
+        FIPS is organized into four layers. Each one has a single job and knows nothing about the
+        layers above or below it. We will explore each in detail through these lessons.
       </p>
 
       <div class="mt-4 space-y-2">
-        {[
-          { name: "Application Interface", desc: "Native API or IPv6 TUN adapter for legacy apps" },
-          { name: "FSP (Session Protocol)", desc: "End-to-end Noise XK encryption between endpoints" },
-          { name: "FMP (Mesh Protocol)", desc: "Hop-by-hop Noise IK encryption, spanning tree, bloom filters, routing" },
-          { name: "Transport", desc: "Pluggable: UDP, Ethernet, WiFi, Bluetooth, Tor, Serial" },
-        ].map((layer, i) => (
-          <div class="flex items-center gap-3 rounded border border-fips-border p-3 bg-fips-surface/30">
-            <span class="text-fips-accent font-mono text-xs w-4 text-right flex-shrink-0">{4 - i}</span>
-            <div>
-              <span class="font-semibold text-sm">{layer.name}</span>
-              <span class="text-fips-muted text-sm ml-2">{layer.desc}</span>
+        {
+          [
+            {
+              name: "Application Interface",
+              desc: "Native API or IPv6 TUN adapter for legacy apps",
+            },
+            {
+              name: "FSP (Session Protocol)",
+              desc: "End-to-end Noise XK encryption between endpoints",
+            },
+            {
+              name: "FMP (Mesh Protocol)",
+              desc: "Hop-by-hop Noise IK encryption, spanning tree, bloom filters, routing",
+            },
+            { name: "Transport", desc: "Pluggable: UDP, Ethernet, WiFi, Bluetooth, Tor, Serial" },
+          ].map((layer, i) => (
+            <div class="flex items-center gap-3 rounded border border-fips-border p-3 bg-fips-surface/30">
+              <span class="text-fips-accent font-mono text-xs w-4 text-right flex-shrink-0">
+                {4 - i}
+              </span>
+              <div>
+                <span class="font-semibold text-sm">{layer.name}</span>
+                <span class="text-fips-muted text-sm ml-2">{layer.desc}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        }
       </div>
 
       <p class="mt-6 text-fips-muted text-sm">
-        In the next lesson, we will look at the identity system: how a single keypair gives you an address, a routing ID, and IPv6 compatibility.
+        In the next lesson, we will look at the identity system: how a single keypair gives you an
+        address, a routing ID, and IPv6 compatibility.
       </p>
     </section>
 

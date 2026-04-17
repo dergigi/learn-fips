@@ -10,7 +10,8 @@ export const lessons: Lesson[] = [
     slug: "1-what-is-fips",
     number: 1,
     title: "What is FIPS?",
-    description: "The problem with centralized networks, and how a self-organizing mesh changes the picture.",
+    description:
+      "The problem with centralized networks, and how a self-organizing mesh changes the picture.",
   },
   {
     slug: "2-identity",
@@ -22,7 +23,8 @@ export const lessons: Lesson[] = [
     slug: "3-protocol-stack",
     number: 3,
     title: "The Protocol Stack",
-    description: "Four layers, each doing one job. Click through them to see how they fit together.",
+    description:
+      "Four layers, each doing one job. Click through them to see how they fit together.",
   },
   {
     slug: "4-transports",
@@ -40,7 +42,8 @@ export const lessons: Lesson[] = [
     slug: "6-encryption",
     number: 6,
     title: "Encryption",
-    description: "Two layers of encryption: hop-by-hop and end-to-end. Watch a packet traverse the mesh.",
+    description:
+      "Two layers of encryption: hop-by-hop and end-to-end. Watch a packet traverse the mesh.",
   },
   {
     slug: "7-putting-it-together",

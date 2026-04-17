@@ -4,10 +4,26 @@ import { generateFullIdentity, hexEncode, type FipsIdentity } from "../lib/crypt
 
 const steps = [
   { key: "privateKey", label: "Private Key (nsec)", who: "Only you. Never leaves your node." },
-  { key: "publicKey", label: "Public Key (compressed)", who: "Shared during Noise handshakes with direct peers." },
-  { key: "npub", label: "npub (bech32)", who: "Application-layer identity. How other users address you." },
-  { key: "nodeAddr", label: "node_addr (SHA-256, 16 bytes)", who: "Routing identifier. What transit routers see in packet headers." },
-  { key: "ipv6", label: "IPv6 Address (fd00::/8)", who: "For legacy apps. Lets unmodified IPv6 software use the mesh." },
+  {
+    key: "publicKey",
+    label: "Public Key (compressed)",
+    who: "Shared during Noise handshakes with direct peers.",
+  },
+  {
+    key: "npub",
+    label: "npub (bech32)",
+    who: "Application-layer identity. How other users address you.",
+  },
+  {
+    key: "nodeAddr",
+    label: "node_addr (SHA-256, 16 bytes)",
+    who: "Routing identifier. What transit routers see in packet headers.",
+  },
+  {
+    key: "ipv6",
+    label: "IPv6 Address (fd00::/8)",
+    who: "For legacy apps. Lets unmodified IPv6 software use the mesh.",
+  },
 ] as const;
 
 function formatValue(identity: FipsIdentity, key: string): string {
@@ -60,7 +76,8 @@ export default function IdentityGenerator() {
 
       {!identity && (
         <p className="text-fips-muted text-sm">
-          Click the button to generate a real secp256k1 keypair and watch each derived identifier appear.
+          Click the button to generate a real secp256k1 keypair and watch each derived identifier
+          appear.
         </p>
       )}
 

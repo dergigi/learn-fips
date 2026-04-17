@@ -24,7 +24,7 @@ function bech32Polymod(values: number[]): number {
     const b = chk >> 25;
     chk = ((chk & 0x1ffffff) << 5) ^ v;
     for (let i = 0; i < 5; i++) {
-      if ((b >> i) & 1) chk ^= GEN[i];
+      if ((b >> i) & 1) chk ^= GEN[i]!;
     }
   }
   return chk;
@@ -71,7 +71,7 @@ export function deriveNpub(publicKey: Uint8Array): string {
   const hrp = "npub";
   const words = convertBits(xOnly, 8, 5, true);
   const checksum = bech32Checksum(hrp, words);
-  return hrp + "1" + [...words, ...checksum].map((d) => BECH32_CHARSET[d]).join("");
+  return hrp + "1" + [...words, ...checksum].map((d) => BECH32_CHARSET[d]!).join("");
 }
 
 export function deriveNodeAddr(publicKey: Uint8Array): Uint8Array {
@@ -87,7 +87,7 @@ export function deriveIPv6(nodeAddr: Uint8Array): string {
 
   const groups: string[] = [];
   for (let i = 0; i < 16; i += 2) {
-    groups.push(((bytes[i] << 8) | bytes[i + 1]).toString(16));
+    groups.push(((bytes[i]! << 8) | bytes[i + 1]!).toString(16));
   }
   return groups.join(":");
 }

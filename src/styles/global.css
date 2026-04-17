@@ -18,7 +18,10 @@
 html {
   background-color: var(--color-fips-bg);
   color: var(--color-fips-text);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   scroll-behavior: smooth;
 }
 
@@ -48,7 +51,9 @@ body {
   }
 }
 
-code, pre, .mono {
+code,
+pre,
+.mono {
   font-family: var(--font-mono);
 }
 

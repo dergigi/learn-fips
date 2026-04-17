@@ -39,14 +39,14 @@ npm run dev       # http://localhost:4321
 
 ## Scripts
 
-| Command             | What it does                                             |
-| ------------------- | -------------------------------------------------------- |
-| `npm run dev`       | Start the Astro dev server                               |
-| `npm run build`     | Build to `./dist/`                                       |
-| `npm run preview`   | Preview the production build locally                     |
-| `npm run check`     | `astro check` — type-check `.astro`, `.ts`, `.tsx` files |
-| `npm test`          | Run the Vitest suite once                                |
-| `npm run test:watch`| Run tests in watch mode                                  |
+| Command              | What it does                                             |
+| -------------------- | -------------------------------------------------------- |
+| `npm run dev`        | Start the Astro dev server                               |
+| `npm run build`      | Build to `./dist/`                                       |
+| `npm run preview`    | Preview the production build locally                     |
+| `npm run check`      | `astro check` — type-check `.astro`, `.ts`, `.tsx` files |
+| `npm test`           | Run the Vitest suite once                                |
+| `npm run test:watch` | Run tests in watch mode                                  |
 
 ## Project layout
 

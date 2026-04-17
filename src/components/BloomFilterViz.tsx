@@ -44,7 +44,7 @@ export default function BloomFilterViz() {
 
   const bitArray: boolean[] = [];
   for (let i = 0; i < BIT_SIZE * 8; i++) {
-    bitArray.push(!!(filter.bits[i >> 3] & (1 << (i & 7))));
+    bitArray.push(!!(filter.bits[i >> 3]! & (1 << (i & 7))));
   }
 
   return (
@@ -60,37 +60,53 @@ export default function BloomFilterViz() {
           placeholder="Node name to insert..."
           className="px-3 py-1.5 rounded border border-fips-border bg-fips-bg text-sm font-mono text-fips-text placeholder:text-fips-muted/50 w-44"
         />
-        <button onClick={insertItem} className="px-3 py-1.5 rounded bg-fips-accent text-fips-bg text-sm font-semibold">
+        <button
+          onClick={insertItem}
+          className="px-3 py-1.5 rounded bg-fips-accent text-fips-bg text-sm font-semibold"
+        >
           Insert
         </button>
         <input
           type="text"
           value={queryName}
-          onChange={(e) => { setQueryName(e.target.value); setQueryResult(null); }}
+          onChange={(e) => {
+            setQueryName(e.target.value);
+            setQueryResult(null);
+          }}
           onKeyDown={(e) => e.key === "Enter" && queryItem()}
           placeholder="Node name to query..."
           className="px-3 py-1.5 rounded border border-fips-border bg-fips-bg text-sm font-mono text-fips-text placeholder:text-fips-muted/50 w-44"
         />
-        <button onClick={queryItem} className="px-3 py-1.5 rounded border border-fips-accent text-fips-accent text-sm font-semibold">
+        <button
+          onClick={queryItem}
+          className="px-3 py-1.5 rounded border border-fips-accent text-fips-accent text-sm font-semibold"
+        >
           Query
         </button>
-        <button onClick={reset} className="px-3 py-1.5 rounded border border-fips-border text-fips-muted text-sm">
+        <button
+          onClick={reset}
+          className="px-3 py-1.5 rounded border border-fips-border text-fips-muted text-sm"
+        >
           Reset
         </button>
       </div>
 
       {queryResult !== null && (
-        <p className={`text-sm mb-3 font-mono ${queryResult ? "text-fips-highlight" : "text-fips-green"}`}>
+        <p
+          className={`text-sm mb-3 font-mono ${queryResult ? "text-fips-highlight" : "text-fips-green"}`}
+        >
           {queryResult
             ? `"${queryName}" → MAYBE present (could be false positive)`
-            : `"${queryName}" → DEFINITELY NOT present`
-          }
+            : `"${queryName}" → DEFINITELY NOT present`}
         </p>
       )}
 
       {/* Bit grid */}
       <div className="overflow-x-auto mb-3">
-        <div className="inline-grid gap-px" style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 6px)` }}>
+        <div
+          className="inline-grid gap-px"
+          style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 6px)` }}
+        >
           {bitArray.map((bit, i) => (
             <div
               key={i}
@@ -113,7 +129,10 @@ export default function BloomFilterViz() {
       {insertedNames.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1">
           {insertedNames.map((name) => (
-            <span key={name} className="px-2 py-0.5 rounded-full bg-fips-accent/10 text-fips-accent text-xs font-mono">
+            <span
+              key={name}
+              className="px-2 py-0.5 rounded-full bg-fips-accent/10 text-fips-accent text-xs font-mono"
+            >
               {name} → {hexEncode(nodeAddrFromId(name)).slice(0, 8)}...
             </span>
           ))}

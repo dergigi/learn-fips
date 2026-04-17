@@ -1,5 +1,15 @@
 import type { QuizQuestion } from "../lib/types";
 
+export function getQuiz(slug: string): QuizQuestion[] {
+  const q = quizzes[slug];
+  if (!q) throw new Error(`No quiz defined for lesson: ${slug}`);
+  return q;
+}
+
+export function hasQuiz(slug: string): boolean {
+  return slug in quizzes;
+}
+
 export const quizzes: Record<string, QuizQuestion[]> = {
   "2-identity": [
     {
@@ -12,7 +22,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       question: "A transit router forwarding your packet can see your:",
       options: ["npub (public key)", "node_addr (SHA-256 hash)", "Private key", "IPv6 address"],
       correctIndex: 1,
-      explanation: "Transit routers see only the node_addr, a one-way hash of the public key. They cannot recover the npub from it.",
+      explanation:
+        "Transit routers see only the node_addr, a one-way hash of the public key. They cannot recover the npub from it.",
     },
     {
       question: "How is a FIPS IPv6 address derived?",
@@ -23,7 +34,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "Hash of the IP address of the first peer",
       ],
       correctIndex: 2,
-      explanation: "The IPv6 address is deterministic: 0xfd prefix + first 15 bytes of node_addr, placing it in the fd00::/8 ULA space.",
+      explanation:
+        "The IPv6 address is deterministic: 0xfd prefix + first 15 bytes of node_addr, placing it in the fd00::/8 ULA space.",
     },
   ],
   "5-spanning-tree": [
@@ -36,7 +48,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "A centrally designated coordinator",
       ],
       correctIndex: 2,
-      explanation: "No election protocol. Each node independently picks the smallest node_addr it knows about. They all converge on the same answer.",
+      explanation:
+        "No election protocol. Each node independently picks the smallest node_addr it knows about. They all converge on the same answer.",
     },
     {
       question: "What does a bloom filter 'no' answer mean?",
@@ -47,7 +60,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "The destination doesn't exist",
       ],
       correctIndex: 1,
-      explanation: "Bloom filters have no false negatives. If the filter says 'no', the destination is definitely not reachable through that peer.",
+      explanation:
+        "Bloom filters have no false negatives. If the filter says 'no', the destination is definitely not reachable through that peer.",
     },
     {
       question: "When the network partitions, what happens?",
@@ -58,7 +72,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "Nodes flood the network trying to find the original root",
       ],
       correctIndex: 1,
-      explanation: "Each partition converges on its own root (smallest node_addr in the segment). When they rejoin, the globally-smallest root wins.",
+      explanation:
+        "Each partition converges on its own root (smallest node_addr in the segment). When they rejoin, the globally-smallest root wins.",
     },
   ],
   "6-encryption": [
@@ -66,7 +81,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       question: "Which Noise pattern does FMP (link layer) use?",
       options: ["Noise NK", "Noise XK", "Noise IK", "Noise XX"],
       correctIndex: 2,
-      explanation: "FMP uses Noise IK because the initiator knows the responder's key from config. Single round-trip mutual authentication.",
+      explanation:
+        "FMP uses Noise IK because the initiator knows the responder's key from config. Single round-trip mutual authentication.",
     },
     {
       question: "Why does FSP use Noise XK instead of IK?",
@@ -77,7 +93,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "XK provides better forward secrecy",
       ],
       correctIndex: 1,
-      explanation: "Session traffic crosses untrusted intermediate nodes. XK delays the initiator's identity to msg3, encrypted under the full shared secret.",
+      explanation:
+        "Session traffic crosses untrusted intermediate nodes. XK delays the initiator's identity to msg3, encrypted under the full shared secret.",
     },
     {
       question: "What can an intermediate router see when forwarding a packet?",
@@ -88,7 +105,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "Nothing at all; the packet is opaque",
       ],
       correctIndex: 1,
-      explanation: "Transit routers decrypt the link layer to read the routing envelope (node_addrs, TTL, path MTU) but cannot read the session-layer payload.",
+      explanation:
+        "Transit routers decrypt the link layer to read the routing envelope (node_addrs, TTL, path MTU) but cannot read the session-layer payload.",
     },
   ],
   "7-putting-it-together": [
@@ -101,7 +119,8 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "DNS resolution at the ISP level",
       ],
       correctIndex: 1,
-      explanation: "When a node needs to reach an unknown destination, it sends a LookupRequest that propagates via bloom-guided tree routing.",
+      explanation:
+        "When a node needs to reach an unknown destination, it sends a LookupRequest that propagates via bloom-guided tree routing.",
     },
     {
       question: "How does SessionSetup warm transit node caches?",
@@ -112,13 +131,15 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "The root distributes coordinate tables to all nodes",
       ],
       correctIndex: 1,
-      explanation: "SessionSetup carries src and dest coordinates in the clear (outside the Noise payload). Each transit node caches them as the packet passes through.",
+      explanation:
+        "SessionSetup carries src and dest coordinates in the clear (outside the Noise payload). Each transit node caches them as the packet passes through.",
     },
     {
       question: "What is the total per-packet overhead for IPv6 traffic through FIPS?",
       options: ["37 bytes", "77 bytes", "106 bytes", "150 bytes"],
       correctIndex: 1,
-      explanation: "106 bytes base protocol overhead, minus 33 bytes saved by IPv6 header compression, plus 4 bytes port header = 77 bytes (FIPS_IPV6_OVERHEAD).",
+      explanation:
+        "106 bytes base protocol overhead, minus 33 bytes saved by IPv6 header compression, plus 4 bytes port header = 77 bytes (FIPS_IPV6_OVERHEAD).",
     },
   ],
 };

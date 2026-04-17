@@ -11,17 +11,24 @@ import TransportGrid from "../../components/TransportGrid";
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <p>
-        A transport in FIPS is a driver for a particular communication medium. A UDP socket. An Ethernet interface. A Tor circuit. A serial line. The transport's job is simple: accept a datagram and an address, deliver the datagram, and push inbound datagrams up to the mesh layer.
+        A transport in FIPS is a driver for a particular communication medium. A UDP socket. An
+        Ethernet interface. A Tor circuit. A serial line. The transport's job is simple: accept a
+        datagram and an address, deliver the datagram, and push inbound datagrams up to the mesh
+        layer.
       </p>
 
       <p>
-        The transport layer deals only in transport addresses: IP:port pairs, MAC addresses, .onion identifiers. These addresses are opaque to everything above FMP. Once the Noise IK handshake completes and the peer is authenticated, the transport address is thrown away. From that point on, the peer is identified solely by its cryptographic identity.
+        The transport layer deals only in transport addresses: IP:port pairs, MAC addresses, .onion
+        identifiers. These addresses are opaque to everything above FMP. Once the Noise IK handshake
+        completes and the peer is authenticated, the transport address is thrown away. From that
+        point on, the peer is identified solely by its cryptographic identity.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Three categories</h2>
 
       <p>
-        Click any transport to see its properties. Transports marked "live" are already implemented in the FIPS codebase.
+        Click any transport to see its properties. Transports marked "live" are already implemented
+        in the FIPS codebase.
       </p>
 
       <TransportGrid client:visible />
@@ -29,21 +36,33 @@ import TransportGrid from "../../components/TransportGrid";
       <h2 class="text-xl font-semibold mt-8 mb-4">Multi-transport bridging</h2>
 
       <p>
-        A node can run multiple transports at the same time. Peers from all transports feed into a single spanning tree and routing table. If one transport fails, traffic automatically routes through alternatives.
+        A node can run multiple transports at the same time. Peers from all transports feed into a
+        single spanning tree and routing table. If one transport fails, traffic automatically routes
+        through alternatives.
       </p>
 
       <p>
-        A concrete example: a node with both UDP and Ethernet transports bridges between internet-connected peers and local-only devices on the same LAN. A node with both UDP and Tor transports acts as a bridge between clearnet and anonymous portions of the mesh. No special code is needed. The routing layer handles it.
+        A concrete example: a node with both UDP and Ethernet transports bridges between
+        internet-connected peers and local-only devices on the same LAN. A node with both UDP and
+        Tor transports acts as a bridge between clearnet and anonymous portions of the mesh. No
+        special code is needed. The routing layer handles it.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">The TCP-over-TCP problem</h2>
 
       <p>
-        FIPS prefers unreliable transports (like UDP) because running TCP application traffic over a reliable transport creates a layering problem. When the inner TCP detects loss (which might be the outer TCP retransmitting), it retransmits too, creating more traffic for the outer TCP, which may itself be retransmitting. This amplification loop gets bad under any real packet loss.
+        FIPS prefers unreliable transports (like UDP) because running TCP application traffic over a
+        reliable transport creates a layering problem. When the inner TCP detects loss (which might
+        be the outer TCP retransmitting), it retransmits too, creating more traffic for the outer
+        TCP, which may itself be retransmitting. This amplification loop gets bad under any real
+        packet loss.
       </p>
 
       <p>
-        When a reliable transport must be used (Tor, TCP fallback when UDP is blocked), FIPS handles the elevated latency through its metrics system. MMP (Metrics Measurement Protocol) measures the actual link quality, and cost-based parent selection naturally penalizes high-latency links. The mesh adapts.
+        When a reliable transport must be used (Tor, TCP fallback when UDP is blocked), FIPS handles
+        the elevated latency through its metrics system. MMP (Metrics Measurement Protocol) measures
+        the actual link quality, and cost-based parent selection naturally penalizes high-latency
+        links. The mesh adapts.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Why UDP is the primary transport</h2>

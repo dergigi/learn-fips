@@ -11,16 +11,24 @@ const next = lessons.find((l) => l.number === current + 1);
 ---
 
 <nav class="flex items-center justify-between py-8 mt-12 border-t border-fips-border">
-  {prev ? (
-    <a href={`/lessons/${prev.slug}`} class="group flex flex-col text-left">
-      <span class="text-fips-muted text-xs uppercase tracking-wider">Previous</span>
-      <span class="text-fips-accent group-hover:underline">{prev.title}</span>
-    </a>
-  ) : <div />}
-  {next ? (
-    <a href={`/lessons/${next.slug}`} class="group flex flex-col text-right ml-auto">
-      <span class="text-fips-muted text-xs uppercase tracking-wider">Next</span>
-      <span class="text-fips-accent group-hover:underline">{next.title}</span>
-    </a>
-  ) : <div />}
+  {
+    prev ? (
+      <a href={`/lessons/${prev.slug}`} class="group flex flex-col text-left">
+        <span class="text-fips-muted text-xs uppercase tracking-wider">Previous</span>
+        <span class="text-fips-accent group-hover:underline">{prev.title}</span>
+      </a>
+    ) : (
+      <div />
+    )
+  }
+  {
+    next ? (
+      <a href={`/lessons/${next.slug}`} class="group flex flex-col text-right ml-auto">
+        <span class="text-fips-muted text-xs uppercase tracking-wider">Next</span>
+        <span class="text-fips-accent group-hover:underline">{next.title}</span>
+      </a>
+    ) : (
+      <div />
+    )
+  }
 </nav>
