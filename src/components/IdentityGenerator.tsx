@@ -46,12 +46,14 @@ function formatValue(identity: FipsIdentity, key: string): string {
 export default function IdentityGenerator() {
   const [identity, setIdentity] = useState<FipsIdentity | null>(null);
   const [visibleSteps, setVisibleSteps] = useState(0);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
 
   function generate() {
     const id = generateFullIdentity();
     setIdentity(id);
     setVisibleSteps(0);
+    setCopiedKey(null);
 
     if (reduceMotion) {
       setVisibleSteps(steps.length);
@@ -59,6 +61,32 @@ export default function IdentityGenerator() {
     }
     for (let i = 1; i <= steps.length; i++) {
       setTimeout(() => setVisibleSteps(i), i * 400);
+    }
+  }
+
+  async function copyValue(key: string, value: string) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = value;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopiedKey(key);
+      setTimeout(() => {
+        setCopiedKey((k) => (k === key ? null : k));
+      }, 1500);
+    } catch {
+      // Clipboard blocked (iframe, insecure context): surface a best-effort failure.
+      setCopiedKey(`${key}:error`);
+      setTimeout(() => setCopiedKey(null), 1500);
     }
   }
 
@@ -106,6 +134,18 @@ export default function IdentityGenerator() {
                     <span className="text-fips-accent text-xs font-mono uppercase tracking-wider">
                       {step.label}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => copyValue(step.key, value)}
+                      aria-label={`Copy ${step.label}`}
+                      className="shrink-0 text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors border border-fips-border hover:border-fips-accent/60 rounded px-2 py-0.5"
+                    >
+                      {copiedKey === step.key
+                        ? "Copied"
+                        : copiedKey === `${step.key}:error`
+                          ? "Failed"
+                          : "Copy"}
+                    </button>
                   </div>
                   <code
                     className={`block text-sm font-mono text-fips-text ${isLong ? "break-all" : ""}`}
