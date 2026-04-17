@@ -66,17 +66,23 @@ import { getQuiz } from "../../data/quizzes";
       <h2 class="text-xl font-semibold mt-8 mb-4">Bloom filters for reachability</h2>
 
       <p>
-        Each node maintains a bloom filter that summarizes the set of <code
-          class="mono text-fips-accent">node_addr</code
-        > values reachable through it. When a node receives a packet for an unknown destination, it queries
-        each peer's bloom filter. A "no" answer means the destination is definitely unreachable through
-        that peer. A "yes" means the destination might be reachable (bloom filters have false positives,
-        but never false negatives).
+        Each node maintains one outbound bloom filter <em>per peer</em>. The filter for peer Q
+        summarizes the set of <code class="mono text-fips-accent">node_addr</code> values reachable through
+        this node, excluding anything Q already knows about. When a packet arrives for an unknown destination,
+        the node queries each peer's most recent inbound filter. A "no" answer means the destination is
+        definitely unreachable through that peer. A "yes" means it might be reachable (bloom filters have
+        false positives, but never false negatives).
       </p>
 
       <p>
-        Bloom filters use split-horizon: a node does not include addresses learned from a peer in
-        the filter it sends back to that peer. This prevents routing loops.
+        Two rules shape how filters propagate. <strong>Tree-only merge</strong>: only filters
+        received from tree peers (parent + children) are merged into outgoing filters. Non-tree mesh
+        peers still send and receive <code class="mono">FilterAnnounce</code> messages, but their filters
+        are only consulted for direct single-hop shortcuts, not propagated further. This keeps filters
+        from saturating as the mesh grows. <strong>Split-horizon exclusion</strong>: the outbound
+        filter to peer Q never includes entries learned from Q itself, which prevents the two peers
+        from echoing each other's contents back and forth. Routing loops are prevented separately,
+        by the strict-decreasing tree-distance check at every hop.
       </p>
 
       <p>
