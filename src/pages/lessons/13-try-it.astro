@@ -1,0 +1,222 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import InstallPicker from "../../components/InstallPicker";
+
+const TEST_PEER_NPUB = "npub1qmc3cvfz0yu2hx96nq3gp55zdan2qclealn7xshgr448d3nh6lks7zel98";
+const TEST_PEER_ADDR = "217.77.8.91:2121";
+---
+
+<Base title="Try It">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 13</p>
+    <h1 class="text-3xl font-bold mb-8">Try It</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Twelve lessons of diagrams and byte layouts are enough. The rest of the protocol makes a lot
+        more sense once you watch a real node boot, run a handshake, and show up in a spanning tree
+        you can poke at. This page has everything you need to get there.
+      </p>
+
+      <p>The plan:</p>
+
+      <ol class="list-decimal pl-6 space-y-1 text-fips-muted text-sm">
+        <li>Build or install the <code class="font-mono">fips</code> daemon.</li>
+        <li>
+          Point it at the public test node. The Debian and macOS packages ship this peer in the
+          default config, so most of you can skip the config step.
+        </li>
+        <li>Start the service and confirm you joined the mesh.</li>
+        <li>
+          Send a packet across it. Ping a peer by <code class="font-mono">.fips</code> name or SSH into
+          a mesh-reachable host.
+        </li>
+      </ol>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The public test node</h2>
+
+      <div
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-xs space-y-1 text-fips-muted"
+      >
+        <div>
+          <span class="text-fips-accent">alias </span>fips-test-node
+        </div>
+        <div>
+          <span class="text-fips-accent">npub </span><span class="text-fips-text break-all"
+            >{TEST_PEER_NPUB}</span
+          >
+        </div>
+        <div>
+          <span class="text-fips-accent">udp </span><span class="text-fips-text"
+            >{TEST_PEER_ADDR}</span
+          >
+        </div>
+      </div>
+
+      <p>
+        It is a plain FIPS node with <code class="font-mono">auto_connect</code> open to inbound UDP.
+        When your node starts, it runs a Noise IK handshake with the test node, builds a link, and joins
+        whatever tree the test node is part of. No other configuration is required.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Prerequisites</h2>
+
+      <ul class="list-disc pl-6 space-y-1 text-fips-muted text-sm">
+        <li>Rust 1.85 or newer (edition 2024). The project pins the toolchain in its lockfile.</li>
+        <li>
+          Admin privileges on the host. The daemon creates a TUN device (<code class="font-mono"
+            >fips0</code
+          > on Linux, <code class="font-mono">utunN</code> on macOS), which the kernel will not give you
+          as an unprivileged user.
+        </li>
+        <li>
+          Outbound UDP on port 2121. If the test-node handshake never completes, a firewall or CGNAT
+          is the first thing to check.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Install and connect</h2>
+
+      <p>
+        Pick a platform. Every code block has a copy button. The commands come straight from the
+        <a
+          href="https://github.com/jmcorgan/fips#installation"
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent underline">project README</a
+        >, so when the upstream install changes, this page is the first thing we update.
+      </p>
+
+      <InstallPicker client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Your first packet</h2>
+
+      <p>
+        Once <code class="font-mono">fipsctl show peers</code> lists the test node with state
+        <code class="font-mono">Authenticated</code> and the spanning tree has at least two nodes in it,
+        the mesh is usable. Try any of these:
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-fips-muted mb-1">
+            Reach the test node by name
+          </div>
+          <pre
+            class="rounded border border-fips-border bg-fips-bg p-3 text-xs font-mono text-fips-text overflow-x-auto whitespace-pre">{`ping6 ${TEST_PEER_NPUB}.fips`}</pre>
+          <p class="text-xs text-fips-muted mt-1">
+            On macOS use <code class="font-mono">ping6</code>, not
+            <code class="font-mono">ping</code>. macOS ships them as two separate binaries and the
+            IPv4 one will not resolve AAAA records.
+          </p>
+        </div>
+
+        <div>
+          <div class="text-xs uppercase tracking-wider text-fips-muted mb-1">
+            Watch the mesh in real time
+          </div>
+          <pre
+            class="rounded border border-fips-border bg-fips-bg p-3 text-xs font-mono text-fips-text overflow-x-auto whitespace-pre">{`fipstop`}</pre>
+          <p class="text-xs text-fips-muted mt-1">
+            A TUI dashboard for status, peers, links, sessions, tree, transports, and routing. Press
+            <code class="font-mono">q</code> to quit.
+          </p>
+        </div>
+
+        <div>
+          <div class="text-xs uppercase tracking-wider text-fips-muted mb-1">
+            Run something over it
+          </div>
+          <pre
+            class="rounded border border-fips-border bg-fips-bg p-3 text-xs font-mono text-fips-text overflow-x-auto whitespace-pre">{`ssh -6 npub1...xxx.fips
+curl -6 http://npub1...yyy.fips/`}</pre>
+          <p class="text-xs text-fips-muted mt-1">
+            Anything that takes an IPv6 address works. The flag forces the tool to use IPv6 and pick
+            up the <code class="font-mono">AAAA</code> record from the FIPS resolver.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">When it does not work</h2>
+
+      <div class="space-y-3">
+        <div class="rounded border border-fips-border p-3">
+          <p class="font-semibold text-sm text-fips-text mb-1">Handshake never completes</p>
+          <p class="text-sm text-fips-muted">
+            Outbound UDP 2121 is blocked, you are behind a symmetric NAT, or IPv4 connectivity to
+            <code class="font-mono">{TEST_PEER_ADDR}</code> is dropped. Try a different network or add
+            a TCP fallback under <code class="font-mono">transports.tcp</code>.
+          </p>
+        </div>
+
+        <div class="rounded border border-fips-border p-3">
+          <p class="font-semibold text-sm text-fips-text mb-1">
+            <code class="font-mono">.fips</code> names do not resolve
+          </p>
+          <p class="text-sm text-fips-muted">
+            On tarball installs you have to point your system resolver at
+            <code class="font-mono">127.0.0.1:5354</code> for the <code class="font-mono">fips</code
+            >
+            domain. The Debian and macOS packages do this for you. Check with
+            <code class="font-mono">dig @127.0.0.1 -p 5354 npub1...xxx.fips AAAA</code>.
+          </p>
+        </div>
+
+        <div class="rounded border border-fips-border p-3">
+          <p class="font-semibold text-sm text-fips-text mb-1">
+            Tree stays at one node (just yourself)
+          </p>
+          <p class="text-sm text-fips-muted">
+            The link is up but no spanning-tree announcements have arrived yet. Give it a few
+            seconds. If it persists, <code class="font-mono">fipsctl show links</code> will tell you whether
+            the link is authenticated and which metrics MMP has collected so far.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Where to go from here</h2>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          Add a persistent identity. Set <code class="font-mono"
+            >node.identity.persistent: true</code
+          >
+          in your config so your npub survives restarts and your peers can pin it.
+        </li>
+        <li>
+          Bring a service online. The
+          <a
+            href="https://github.com/jmcorgan/fips/tree/master/examples/sidecar-nostr-relay"
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">strfry sidecar example</a
+          > runs a Nostr relay that is only reachable through the mesh. About twenty lines of docker-compose.
+        </li>
+        <li>
+          Expose a second device. Run <code class="font-mono">fips-gateway</code> on a home server and
+          reach mesh peers from a laptop that does not have FIPS installed. Lesson 12 covers how the NAT
+          plumbing works.
+        </li>
+        <li>
+          Read the specs that generated this site:
+          <a
+            href="https://github.com/jmcorgan/fips/tree/master/docs/design"
+            target="_blank"
+            rel="noopener"
+            class="text-fips-accent underline">docs/design</a
+          >. Everything in these lessons is grounded in those documents.
+        </li>
+      </ul>
+
+      <p class="mt-6 text-fips-muted text-sm">
+        Break something useful, open an issue, or put up a second test node. The mesh gets more
+        interesting with every peer that joins it.
+      </p>
+    </section>
+
+    <SeeAlso terms={["fips", "node_addr", "fips-gateway", "ipv6-ula", "identity-cache"]} />
+    <LessonNav current={13} />
+  </article>
+</Base>
