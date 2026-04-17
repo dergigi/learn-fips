@@ -402,6 +402,25 @@ export default function MeshSimulator() {
     );
   }
 
+  function pickRandomRoute() {
+    const ids = Array.from(nodes.keys());
+    if (ids.length < 2) return;
+    const fromIdx = Math.floor(Math.random() * ids.length);
+    let toIdx = Math.floor(Math.random() * (ids.length - 1));
+    if (toIdx >= fromIdx) toIdx += 1;
+    const from = ids[fromIdx]!;
+    const to = ids[toIdx]!;
+    const path = computeRoute(from, to, nodes);
+    setRouteFrom(from);
+    setRouteTo(to);
+    setRoutePath(path);
+    setStatusMsg(
+      path.length > 1
+        ? `Random route ${from} to ${to}: ${path.join(" → ")} (${path.length - 1} hops).`
+        : `No route found from ${from} to ${to}.`
+    );
+  }
+
   const selectedInfo = selectedNode ? nodes.get(selectedNode) : null;
   const sortedIds = Array.from(nodes.keys()).sort();
 
@@ -496,6 +515,32 @@ export default function MeshSimulator() {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          onClick={pickRandomRoute}
+          aria-label="Pick a random source and destination"
+          title="Random route"
+          className="px-2 py-1.5 rounded border border-fips-border hover:border-fips-accent/40 transition-colors text-fips-muted hover:text-fips-accent"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3" />
+            <circle cx="8" cy="8" r="1" fill="currentColor" />
+            <circle cx="16" cy="8" r="1" fill="currentColor" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+            <circle cx="8" cy="16" r="1" fill="currentColor" />
+            <circle cx="16" cy="16" r="1" fill="currentColor" />
+          </svg>
+        </button>
         <button
           type="button"
           onClick={showRouteFromForm}
