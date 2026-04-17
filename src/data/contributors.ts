@@ -9,9 +9,14 @@
  *
  * When a contributor's `npub` is set, the card renders as a Nostr link
  * via njump.to. When it is not, the card falls back to the GitHub
- * profile so the section always has a working link. Drop in npubs as
- * they are confirmed — no rendering changes needed.
+ * profile so the section always has a working link.
+ *
+ * Avatars come from `nostr-avatars.json`, refreshed via
+ * `npm run fetch-avatars` (kind:0 events from public relays). Anything
+ * missing from that file falls back to the GitHub avatar.
  */
+
+import nostrAvatars from "./nostr-avatars.json";
 
 export interface Contributor {
   /** Display name. */
@@ -22,6 +27,36 @@ export interface Contributor {
   role?: string;
   /** Bech32 npub. When set, the card links to njump.to instead of GitHub. */
   npub?: string;
+}
+
+const avatars = nostrAvatars as Record<string, string>;
+
+/**
+ * Resolve the profile link, a subtitle, and an avatar URL for a card.
+ * Keeps the rendering path in the Astro page tiny and avoids repeating
+ * the fallback rules in multiple places.
+ */
+export function resolveContributor(c: Contributor): {
+  href: string | null;
+  subtitle: string;
+  avatar: string | null;
+} {
+  const nostrHref = c.npub ? `https://njump.to/${c.npub}` : null;
+  const githubHref = c.github ? `https://github.com/${c.github}` : null;
+  const href = nostrHref ?? githubHref;
+
+  const subtitle = c.npub
+    ? `${c.npub.slice(0, 16)}…${c.npub.slice(-6)}`
+    : c.github
+      ? `github.com/${c.github}`
+      : "";
+
+  // Prefer the Nostr avatar (if we have a cached one), then GitHub.
+  const nostrAvatar = c.npub ? (avatars[c.npub] ?? null) : null;
+  const githubAvatar = c.github ? `https://github.com/${c.github}.png?size=160` : null;
+  const avatar = nostrAvatar ?? githubAvatar;
+
+  return { href, subtitle, avatar };
 }
 
 export const contributors: Contributor[] = [

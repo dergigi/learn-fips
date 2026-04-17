@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import HeroMesh from "../../components/HeroMesh";
-import { contributors } from "../../data/contributors";
+import { contributors, resolveContributor } from "../../data/contributors";
 
 const FIPS_CONTRIBUTING = "https://github.com/jmcorgan/fips/blob/master/CONTRIBUTING.md";
 const FIPS_DESIGN_DOCS = "https://github.com/jmcorgan/fips/tree/master/docs/design";
@@ -38,27 +38,40 @@ const SOVENG_PODCAST_URL =
       <div class="grid sm:grid-cols-2 gap-3 not-prose my-2">
         {
           contributors.map((c) => {
-            const href = c.npub
-              ? `https://njump.to/${c.npub}`
-              : c.github
-                ? `https://github.com/${c.github}`
-                : null;
+            const { href, subtitle, avatar } = resolveContributor(c);
             if (!href) return null;
-            const subtitle = c.npub
-              ? `${c.npub.slice(0, 16)}…${c.npub.slice(-6)}`
-              : `github.com/${c.github}`;
             return (
               <a
                 href={href}
                 target="_blank"
                 rel="noopener"
-                class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
+                class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors flex items-center gap-3"
               >
-                <div class="flex items-baseline justify-between gap-2 flex-wrap">
-                  <span class="font-semibold text-fips-accent">{c.name}</span>
-                  {c.role && <span class="text-xs font-mono text-fips-muted">{c.role}</span>}
+                {avatar ? (
+                  <img
+                    src={avatar}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    width="48"
+                    height="48"
+                    class="w-12 h-12 rounded-full object-cover bg-fips-bg border border-fips-border shrink-0"
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    class="w-12 h-12 rounded-full bg-fips-bg border border-fips-border shrink-0 flex items-center justify-center text-fips-muted font-mono text-sm"
+                  >
+                    {c.name.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline justify-between gap-2 flex-wrap">
+                    <span class="font-semibold text-fips-accent">{c.name}</span>
+                    {c.role && <span class="text-xs font-mono text-fips-muted">{c.role}</span>}
+                  </div>
+                  <div class="text-xs text-fips-muted mt-1 font-mono truncate">{subtitle}</div>
                 </div>
-                <div class="text-xs text-fips-muted mt-1 font-mono truncate">{subtitle}</div>
               </a>
             );
           })
