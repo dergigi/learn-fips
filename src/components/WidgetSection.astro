@@ -1,0 +1,38 @@
+---
+/**
+ * Shared chrome for a widget section on /interactive.
+ *
+ * The actual interactive component goes in the default slot so Astro
+ * can wire up client directives against a direct import; this wrapper
+ * just owns the heading, blurb, back-link, and separators.
+ */
+import { lessons } from "../data/lessons";
+
+interface Props {
+  id: string;
+  title: string;
+  blurb: string;
+  lessonNumber: number;
+  first?: boolean;
+}
+
+const { id, title, blurb, lessonNumber, first = false } = Astro.props;
+const lesson = lessons.find((l) => l.number === lessonNumber);
+if (!lesson) throw new Error(`Unknown lesson ${lessonNumber} for widget ${id}`);
+
+const sectionClass = first ? "scroll-mt-20" : "mt-12 pt-6 border-t border-fips-border scroll-mt-20";
+---
+
+<section id={id} class={sectionClass}>
+  <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+    <h2 class="text-xl font-semibold">{title}</h2>
+    <a
+      href={`/lessons/${lesson.slug}`}
+      class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+    >
+      Lesson {lessonNumber}: {lesson.title} &rarr;
+    </a>
+  </div>
+  <p class="text-fips-muted text-sm mb-4">{blurb}</p>
+  <slot />
+</section>
