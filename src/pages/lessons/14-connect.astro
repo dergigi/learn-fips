@@ -24,15 +24,15 @@ const SOVENG_PODCAST_URL =
     <h1 class="text-3xl font-bold mb-4">Connect and Contribute</h1>
 
     <p class="text-fips-muted leading-relaxed mb-8">
-      FIPS is small and young. The fastest way to actually understand it is to talk to the people
-      building it, so this page is where the lessons end and the conversation starts.
+      FIPS is small and young. If you want to understand it, talk to the people building it. This
+      page lists who they are and where to find them.
     </p>
 
     <section class="space-y-4 text-fips-text leading-relaxed">
       <h2 class="text-xl font-semibold mt-2 mb-4">Reach out on Nostr</h2>
 
       <p class="text-fips-muted text-sm">
-        FIPS is a Nostr-native project. Most discussion happens there, under the <a
+        Most FIPS discussion happens on Nostr, under the <a
           href={FIPS_HASHTAG_URL}
           target="_blank"
           rel="noopener"
@@ -41,8 +41,8 @@ const SOVENG_PODCAST_URL =
           href={FIPS_CONTRIBUTORS}
           target="_blank"
           rel="noopener"
-          class="text-fips-accent underline">people shipping code</a
-        > are also the easiest ones to ping with a question.
+          class="text-fips-accent underline">contributors</a
+        > below are active there.
       </p>
 
       <div class="grid sm:grid-cols-2 gap-3 not-prose my-2">
@@ -89,17 +89,15 @@ const SOVENG_PODCAST_URL =
       </div>
 
       <p class="text-fips-muted text-sm">
-        Every name above is reachable on Nostr because they want to be. A cold question about a spec
-        paragraph or a bootstrap config is normal there, and usually a better first move than
-        opening a GitHub issue for something that has not been thought through yet.
+        DMs and hashtag replies usually get an answer within a day. Try Nostr before filing a GitHub
+        issue.
       </p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Ways to help, in order of effort</h2>
 
       <p class="text-fips-muted text-sm">
-        Contribution comes in several shapes. Some are code, and most are not. The list below is
-        ordered by effort rather than importance. A single node that stays online for a year is
-        worth more than a dozen drive-by PRs.
+        Five ways to help, roughly sorted by effort. Pick the one that fits the time you have this
+        month.
       </p>
 
       <div class="space-y-3 not-prose my-2">
@@ -121,8 +119,8 @@ const SOVENG_PODCAST_URL =
               rel="noopener"
               class="text-fips-accent underline">design docs</a
             > are the ground truth. If a paragraph is unclear, under-specified, or contradicts the code,
-            that is a bug worth reporting. This site was written from them, so ambiguities surfaced here
-            are worth fixing upstream.
+            that is a bug worth reporting. This site was written against them, so anything confusing here
+            is probably worth fixing upstream too.
           </p>
         </div>
         <div class="rounded-lg border border-fips-border p-4 bg-fips-surface/30">
@@ -164,17 +162,13 @@ const SOVENG_PODCAST_URL =
         </div>
       </div>
 
-      <p class="text-fips-muted text-sm">
-        If you are unsure which slot applies, start with <em>Run a node</em>. A mesh is only as
-        useful as the peers it can reach, and keeping one more router awake somewhere is the
-        cheapest way to make the protocol more useful to everyone else.
-      </p>
+      <p class="text-fips-muted text-sm">If you only do one thing, run a node and leave it on.</p>
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Hear it from the source</h2>
 
       <p class="text-fips-muted text-sm">
-        The design docs cover the what. The posts and conversations below cover the why, which tends
-        to be the part that shapes how you actually use FIPS once you are past the install step.
+        Johnathan wrote the v0.1.0 announcement and sat down for a 36-minute conversation on No
+        Solutions. Both are worth your time before you start hacking on FIPS.
       </p>
 
       <div class="grid md:grid-cols-2 gap-3 not-prose my-2">
@@ -201,10 +195,6 @@ const SOVENG_PODCAST_URL =
           </div>
         </a>
       </div>
-
-      <p class="text-fips-muted text-sm">
-        Once that context has sunk in, the closing quote below says the rest.
-      </p>
     </section>
   </article>
 
@@ -231,7 +221,6 @@ const SOVENG_PODCAST_URL =
         </p>
       </blockquote>
       <figcaption class="mt-8 text-sm text-fips-muted font-mono">
-        &mdash;
         <a
           href={CORGAN_QUOTE_URL}
           target="_blank"

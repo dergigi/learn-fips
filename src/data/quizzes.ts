@@ -115,10 +115,10 @@ export const quizzes: Record<string, QuizQuestion[]> = {
     {
       question: `What is the net per-packet overhead for IPv6 traffic through FIPS, and how is it computed?`,
       options: [
-        `${FIPS_BASE_OVERHEAD} bytes — the full base protocol overhead, with no optimizations.`,
+        `${FIPS_BASE_OVERHEAD} bytes, the full base protocol overhead with no optimizations.`,
         `${FIPS_IPV6_OVERHEAD} bytes = ${FIPS_BASE_OVERHEAD} base − ${FIPS_IPV6_HEADER_SAVINGS} (IPv6 header compression) + ${FIPS_IPV6_PORT_HEADER} (port header).`,
         `${FIPS_IPV6_HEADER_SAVINGS} bytes, because IPv6 compression removes the rest.`,
-        `0 bytes — FIPS inherits the IPv6 MTU unchanged.`,
+        `0 bytes, because FIPS inherits the IPv6 MTU unchanged.`,
       ],
       correctIndex: 1,
       explanation: `Base protocol overhead is ${FIPS_BASE_OVERHEAD}B; the IPv6 adapter saves ${FIPS_IPV6_HEADER_SAVINGS}B via header compression and adds a ${FIPS_IPV6_PORT_HEADER}B port header, netting ${FIPS_IPV6_OVERHEAD}B (FIPS_IPV6_OVERHEAD in src/lib/constants.ts).`,

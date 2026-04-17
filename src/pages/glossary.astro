@@ -43,9 +43,7 @@ const lessonBySlug = new Map(lessons.map((l) => [l.number, l]));
           <div id={t.id} class="scroll-mt-24">
             <dt class="flex flex-wrap items-baseline gap-2 mb-2">
               <span class="text-xl font-semibold">{t.term}</span>
-              {t.expansion && (
-                <span class="text-sm text-fips-muted font-mono">— {t.expansion}</span>
-              )}
+              {t.expansion && <span class="text-sm text-fips-muted font-mono">{t.expansion}</span>}
             </dt>
             <dd class="text-fips-text mb-2">{t.summary}</dd>
             <dd class="text-sm text-fips-muted mb-2">{t.detail}</dd>

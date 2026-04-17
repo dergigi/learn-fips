@@ -113,7 +113,7 @@ export const glossary: GlossaryTerm[] = [
     summary:
       "128-bit routing identifier derived from SHA-256 of the x-only public key, truncated to 16 bytes.",
     detail:
-      "node_addr is what transit routers see in the routing envelope. It is a one-way hash of the node's public key — routers cannot recover the npub from it. It is also the input to the node's IPv6 ULA address.",
+      "node_addr is what transit routers see in the routing envelope. It is a one-way hash of the node's public key, so routers cannot recover the npub from it. It is also the input to the node's IPv6 ULA address.",
     lessons: [2, 5],
     tags: ["identity", "routing"],
   },
@@ -143,7 +143,7 @@ export const glossary: GlossaryTerm[] = [
     summary:
       "The shared rooted tree the mesh builds over its physical links, used to assign coordinates.",
     detail:
-      "Each node independently picks the smallest node_addr it has heard as the root, and the cheapest neighbor toward that root as its parent. No election protocol runs — the rules converge on the globally-smallest root as gossip propagates.",
+      "Each node independently picks the smallest node_addr it has heard as the root, and the cheapest neighbor toward that root as its parent. No election protocol runs; the rules converge on the globally-smallest root as gossip propagates.",
     lessons: [5, 7],
     tags: ["routing"],
   },
