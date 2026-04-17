@@ -35,9 +35,10 @@ export default function HeroMesh() {
     function rebuild() {
       const area = width * height;
       const count = Math.max(70, Math.min(200, Math.round(area / 4200)));
-      const cx = width * 0.42;
-      const cy = height * 0.55;
-      const spread = Math.min(width, height) * 0.55;
+      const cx = width * 0.5;
+      const cy = height * 0.88;
+      const spreadX = width * 0.4;
+      const spreadY = Math.min(height * 0.55, width * 0.22);
 
       nodes = [];
       for (let i = 0; i < count; i++) {
@@ -46,11 +47,11 @@ export default function HeroMesh() {
         const v = Math.random();
         const g = Math.sqrt(-2 * Math.log(u || 1e-6)) * Math.cos(2 * Math.PI * v);
         const angle = Math.random() * Math.PI * 2;
-        const isSatellite = Math.random() < 0.12;
-        const r = isSatellite ? spread * (0.7 + Math.random() * 0.9) : Math.abs(g) * spread * 0.42;
+        const isSatellite = Math.random() < 0.1;
+        const radial = isSatellite ? 0.7 + Math.random() * 0.9 : Math.abs(g) * 0.5;
 
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r * 0.78;
+        const x = cx + Math.cos(angle) * radial * spreadX;
+        const y = cy + Math.sin(angle) * radial * spreadY;
 
         nodes.push({
           baseX: x,
