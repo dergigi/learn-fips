@@ -162,7 +162,7 @@ export default function PacketJourney() {
 
   const atStart = stepIdx === 0;
   const atEnd = stepIdx >= steps.length - 1;
-  const playText = playing ? "Pause" : atStart || atEnd ? "Play" : "Resume";
+  const playLabel = playing ? "⏸ Pause" : atStart || atEnd ? "▶ Play" : "▶ Resume";
 
   return (
     <div className="my-8 rounded-lg border border-fips-border bg-fips-surface/50 p-4">
@@ -330,20 +330,9 @@ export default function PacketJourney() {
         </button>
         <button
           onClick={togglePlay}
-          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold inline-flex items-center gap-1.5"
-          aria-label={playText}
+          className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold"
         >
-          {playing ? (
-            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-              <rect x="1" y="0.5" width="2.5" height="11" rx="0.4" />
-              <rect x="6.5" y="0.5" width="2.5" height="11" rx="0.4" />
-            </svg>
-          ) : (
-            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-              <path d="M1 0.5 L9 6 L1 11.5 Z" />
-            </svg>
-          )}
-          {playText}
+          {playLabel}
         </button>
       </div>
     </div>
