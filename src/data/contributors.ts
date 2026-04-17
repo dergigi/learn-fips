@@ -74,6 +74,7 @@ export const contributors: Contributor[] = [
   {
     github: "alexxie16",
     name: "Alex Xie",
+    npub: "npub1q4hnxfzu5nxylg7p6mj40hvw4ec53z0ncdpre0t0huyl8s8zqrfquvz7zr",
   },
   {
     github: "v0l",
