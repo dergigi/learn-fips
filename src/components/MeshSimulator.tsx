@@ -203,9 +203,9 @@ export default function MeshSimulator() {
         ctx.lineWidth = 2;
         ctx.setLineDash([]);
       } else {
-        ctx.strokeStyle = "rgba(52, 211, 153, 0.55)";
-        ctx.lineWidth = 1.25;
-        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = "rgba(52, 211, 153, 0.75)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
       }
       ctx.stroke();
       ctx.setLineDash([]);
