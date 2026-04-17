@@ -47,6 +47,7 @@ export const LESSONS_WITH_QUIZ = new Set<string>([
   "9-wire-formats",
   "10-mmp",
   "11-threat-model",
+  "12-ipv6-gateway",
 ]);
 
 function empty(): Progress {

@@ -51,3 +51,27 @@ export const FIPS_ERROR_RATE_LIMIT_MS = 100;
 
 /** Session idle timeout: sessions with no application data for this long are torn down. */
 export const FIPS_SESSION_IDLE_TIMEOUT_S = 90;
+
+/**
+ * IPv6 adapter defaults (see fips-ipv6-adapter.md).
+ *
+ * Used in the lesson 12 adapter walkthrough.
+ */
+
+/** Byte size of a bare IPv6 header (RFC 8200). */
+export const IPV6_HEADER_BYTES = 40;
+
+/** Byte size of a TCP header without options. */
+export const TCP_HEADER_BYTES = 20;
+
+/** IPv6 mandatory minimum link MTU. */
+export const IPV6_MIN_MTU = 1280;
+
+/**
+ * Default LRU cap for the IPv6 adapter identity cache
+ * (reverse lookup: fd00::/8 address to (node_addr, pubkey)).
+ */
+export const FIPS_IDENTITY_CACHE_DEFAULT = 10_000;
+
+/** Default DNS TTL returned for .fips names. */
+export const FIPS_DNS_TTL_S = 300;

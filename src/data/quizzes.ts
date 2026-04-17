@@ -7,6 +7,7 @@ import {
   FIPS_IPV6_HEADER_SAVINGS,
   FIPS_IPV6_OVERHEAD,
   FIPS_IPV6_PORT_HEADER,
+  IPV6_MIN_MTU,
 } from "../lib/constants";
 
 export function getQuiz(slug: string): QuizQuestion[] {
@@ -558,6 +559,81 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       correctIndex: 1,
       explanation:
         "If every direct peer of a target is controlled by the same adversary, that adversary dictates the target's view of the mesh. No amount of cryptography fixes that. The defense is topological: spread peers across operators and transports.",
+    },
+  ],
+  "12-ipv6-gateway": [
+    {
+      question:
+        "An unmodified ssh client opens a connection to an fd00::/8 address. Why does the adapter need DNS to have happened first?",
+      options: [
+        "TCP connections fail without DNS lookups.",
+        "The IPv6 address is a one-way hash of the public key; the adapter needs the pubkey from the DNS side effect to route.",
+        "DNS provides the encryption keys.",
+        "The TUN interface only accepts packets for resolved names.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "fd00:: = 0xfd + SHA-256(pubkey)[0..15]. That hash is not reversible. DNS resolution of npub1...fips primes an identity cache with the pubkey; without the cache the adapter returns ICMPv6 Destination Unreachable.",
+    },
+    {
+      question: "Why is the identity cache LRU only, with no TTL?",
+      options: [
+        "TTLs add too much code.",
+        "The mapping is deterministic (a hash), so entries never become stale; eviction is purely memory pressure.",
+        "DNS already caches the mapping.",
+        "Stale entries are harmless and never cleaned.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "A pubkey always produces the same fd00::/8 address. The only reason to evict is to stay under the configured entry cap (default 10K). LRU does the job.",
+    },
+    {
+      question: `Given a transport MTU of 1472, what effective IPv6 MTU does the adapter expose?`,
+      options: [
+        `${1472}`,
+        `${1472 - FIPS_IPV6_OVERHEAD}`,
+        `${IPV6_MIN_MTU}`,
+        `${1472 - FIPS_BASE_OVERHEAD}`,
+      ],
+      correctIndex: 1,
+      explanation: `effective_ipv6_mtu = transport_mtu − FIPS_IPV6_OVERHEAD = 1472 − ${FIPS_IPV6_OVERHEAD} = ${1472 - FIPS_IPV6_OVERHEAD}B.`,
+    },
+    {
+      question: "Why does the adapter rewrite the MSS option on SYN and SYN-ACK?",
+      options: [
+        "To tell the remote side which cipher to use.",
+        "To avoid negotiating a TCP segment size that would exceed the effective IPv6 MTU.",
+        "To upgrade TCP to a FIPS-aware variant.",
+        "To fingerprint TCP stacks.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Clamped MSS = effective_ipv6_mtu − 40 (IPv6) − 20 (TCP). Clamping both sides means the first data segment of the connection already fits, without waiting for ICMP Packet Too Big.",
+    },
+    {
+      question:
+        "fips-gateway allocates a virtual IP from fd01::/112 for each mesh destination. What does the masquerade rule in postrouting do?",
+      options: [
+        "Rewrites the source address of outbound mesh traffic to the gateway's own fips0 address.",
+        "Hides the destination address from the kernel.",
+        "Masks IPv6 addresses as IPv4.",
+        "Drops packets that do not come from the LAN.",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Without masquerade, a LAN client's virtual IP (fd01::5) would go out on the mesh. Peers cannot route replies to that address. Masquerade rewrites the source to the gateway's FIPS identity, so replies come back to the gateway, which DNATs/SNATs them back to the client.",
+    },
+    {
+      question: "What privacy property does the LAN gateway give you, and what is the cost?",
+      options: [
+        "Anonymity on the mesh, at the cost of latency.",
+        "Mesh peers cannot distinguish LAN clients; the gateway's FIPS reputation covers all of them.",
+        "End-to-end encryption between LAN client and mesh destination.",
+        "Sybil resistance for LAN hosts.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "All LAN traffic egresses as the gateway's fd00 address, so peers cannot tell which LAN host sent what. The tradeoff is shared reputation: anything any client does is attributed to the gateway.",
     },
   ],
 };

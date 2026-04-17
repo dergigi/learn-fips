@@ -78,4 +78,11 @@ export const lessons: Lesson[] = [
     description:
       "The four adversary classes FIPS is designed against, and what each one can actually read off the wire.",
   },
+  {
+    slug: "12-ipv6-gateway",
+    number: 12,
+    title: "Talking to Legacy Apps",
+    description:
+      "The IPv6 adapter, the fips-gateway NAT sidecar, and how unmodified SSH or curl end up speaking to a mesh peer.",
+  },
 ];

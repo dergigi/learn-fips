@@ -173,7 +173,7 @@ export const glossary: GlossaryTerm[] = [
       "Unique Local Address range used for FIPS IPv6 addresses so legacy apps can address mesh peers.",
     detail:
       "FIPS derives a per-node IPv6 address by prepending 0xfd to the first 15 bytes of the node_addr. The result sits in fd00::/8, which never collides with public IPv6 routing, and lets unmodified IPv6 software speak into the mesh via a TUN adapter.",
-    lessons: [2, 7],
+    lessons: [2, 7, 12],
     tags: ["identity", "compatibility"],
   },
   {
@@ -251,6 +251,34 @@ export const glossary: GlossaryTerm[] = [
       "FIPS encrypts content at two layers but does not pad, mix, or cover traffic. A global passive observer who sees several transports at once can still correlate flows and infer communicating pairs. This is a documented non-goal: FIPS is not an anonymity network.",
     lessons: [11],
     tags: ["security"],
+  },
+  {
+    id: "tun",
+    term: "TUN device (fips0)",
+    summary: "The kernel virtual interface the IPv6 adapter attaches to.",
+    detail:
+      "fips0 is a TUN device the adapter creates on startup. The kernel routes every fd00::/8 packet through it. The adapter's reader thread picks up outbound IPv6 packets; its writer thread hands inbound mesh traffic back to the kernel as complete IPv6 datagrams. TUN creation needs CAP_NET_ADMIN.",
+    lessons: [12],
+    tags: ["compatibility"],
+  },
+  {
+    id: "identity-cache",
+    term: "Identity cache",
+    summary:
+      "Per-node reverse lookup from fd00::/8 address to (node_addr, pubkey). Populated by DNS.",
+    detail:
+      "The IPv6-to-pubkey derivation is one-way, so the adapter cannot recover routing identity from the destination address alone. DNS for npub1...fips names primes the cache as a side effect of resolution. The cache is LRU-only (default 10K entries) with no TTL: the mapping is deterministic and never becomes stale.",
+    lessons: [12],
+    tags: ["compatibility"],
+  },
+  {
+    id: "fips-gateway",
+    term: "fips-gateway",
+    summary: "Sidecar binary that lets unmodified LAN hosts reach mesh destinations through NAT.",
+    detail:
+      "The gateway runs next to the daemon. It forwards .fips DNS queries to the daemon's resolver, allocates a virtual IP from a configured pool (e.g. fd01::/112) for each destination, and installs per-mapping DNAT + SNAT + masquerade rules in an nftables table. LAN clients need only a route to the pool and DNS pointed at the gateway.",
+    lessons: [12],
+    tags: ["compatibility"],
   },
 ];
 

@@ -1,0 +1,224 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import AdapterMtuLab from "../../components/AdapterMtuLab";
+import { getQuiz } from "../../data/quizzes";
+import {
+  FIPS_DNS_TTL_S,
+  FIPS_IDENTITY_CACHE_DEFAULT,
+  FIPS_IPV6_OVERHEAD,
+  IPV6_MIN_MTU,
+} from "../../lib/constants";
+---
+
+<Base title="Talking to Legacy Apps">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 12</p>
+    <h1 class="text-3xl font-bold mb-8">Talking to Legacy Apps</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Everything so far has assumed the application speaks FIPS natively: call <code class="mono"
+          >open_session(npub)</code
+        >, push datagrams. But almost nothing outside the FIPS codebase does that. SSH wants an IP
+        address. <code class="mono">curl</code> wants a hostname that resolves to one. <code
+          class="mono">scp</code
+        >, browsers, every random daemon already deployed, they all want BSD sockets over IPv6.
+      </p>
+
+      <p>
+        FIPS bridges that gap in two pieces. The IPv6 adapter runs inside the daemon and makes the
+        local node look like an IPv6 endpoint to every application on the host. The <code
+          class="mono">fips-gateway</code
+        >
+        sidecar extends the same trick to LAN hosts that do not run FIPS at all.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The adapter: a TUN with a hash problem</h2>
+
+      <p>
+        An FIPS IPv6 address is just <code class="mono">0xfd</code> prepended to the first 15 bytes of
+        the 16-byte <code class="mono">node_addr</code>, which is itself a SHA-256 truncation of the
+        public key. The result lives in <code class="mono">fd00::/8</code>, which is ULA space (RFC
+        4193) so it cannot collide with real IPv6 traffic.
+      </p>
+
+      <p>
+        The adapter creates a TUN device called <code class="mono">fips0</code>, assigns this
+        address to it, and asks the kernel to route
+        <code class="mono">fd00::/8</code> through the TUN. When an app opens a socket to an <code
+          class="mono">fd00::</code
+        > peer, the packet lands in the adapter's reader thread.
+      </p>
+
+      <p>
+        Now comes the awkward part. The adapter has a destination IPv6 address from the kernel, but
+        the address is a hash. There is no way back to the public key. Without the public key there
+        is no
+        <code class="mono">node_addr</code> to route on, and nothing can happen.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">DNS as the side door</h2>
+
+      <p>
+        The fix is to populate a cache before the packet arrives. The FIPS daemon runs a DNS
+        resolver that recognizes
+        <code class="mono">npub1...xxx.fips</code> names. When an application resolves such a name, the
+        resolver:
+      </p>
+
+      <ol class="list-decimal pl-6 space-y-1 text-fips-muted text-sm">
+        <li>Extracts the bech32 npub from the name.</li>
+        <li>Derives the fd00::/8 address.</li>
+        <li>
+          Writes the triple <code class="mono">(fd00:: prefix, node_addr, pubkey)</code>
+          into the identity cache.
+        </li>
+        <li>Returns the address to the app.</li>
+      </ol>
+
+      <p>
+        By the time the kernel hands the packet to
+        <code class="mono">fips0</code>, the cache already knows who to route to. If an app bypasses
+        DNS (hard-coded address, older cache entry outside this daemon), the adapter returns ICMPv6
+        Destination Unreachable. There is no way to recover the pubkey locally.
+      </p>
+
+      <p>
+        The cache is LRU only, default cap{" "}
+        <code class="mono">{FIPS_IDENTITY_CACHE_DEFAULT.toLocaleString()}</code>{" "}
+        entries, no TTL. The mapping is deterministic (it is a hash; it cannot go stale), so eviction
+        is purely about memory. The DNS TTL is separate; its default is <code class="mono"
+          >{FIPS_DNS_TTL_S}s</code
+        >{" "}
+        and governs when apps re-query.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">MTU in a world that cannot fragment</h2>
+
+      <p>
+        FIPS never fragments at the mesh or session layer. Every datagram has to fit in one
+        transport packet, end to end. The adapter enforces this at the IPv6 boundary in three
+        places:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">Effective IPv6 MTU.</span> The TUN advertises <code
+            class="mono">transport_mtu − {FIPS_IPV6_OVERHEAD}</code
+          >{" "}
+          to the kernel, so most applications pick a sensible size up front.
+        </li>
+        <li>
+          <span class="text-fips-text">TCP MSS clamping.</span> The adapter rewrites the MSS option on
+          every SYN and SYN-ACK it sees, so TCP connections negotiate a segment size that already fits.
+          Both directions are clamped, which avoids the initial oversized-packet loss that would happen
+          with ICMP alone.
+        </li>
+        <li>
+          <span class="text-fips-text">ICMPv6 Packet Too Big.</span> For any packet the app still sends
+          too large, the adapter answers with an ICMPv6 Packet Too Big back through the TUN. That feeds
+          standard kernel PMTUD without any network traversal. Rate-limited per source at 100ms.
+        </li>
+      </ul>
+
+      <p>
+        Transports below <code class="mono">{IPV6_MIN_MTU + FIPS_IPV6_OVERHEAD}B</code>{" "}
+        (LoRa at 256, serial, some BLE profiles) cannot carry IPv6 at all, because IPv6 mandates a 1280-byte
+        minimum link MTU. On those transports, apps have to use the native FIPS datagram API, or rely
+        on a transport driver that does its own internal reassembly.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Try it: see the MTU pipeline</h2>
+
+      <p>
+        Move the transport MTU slider and watch the effective IPv6 MTU, the clamped TCP MSS, and
+        whether a sample packet fits. The presets cover the realistic deployment points: UDP over
+        Ethernet, the IPv6 minimum, and a radio link that cannot do IPv6 at all.
+      </p>
+
+      <AdapterMtuLab client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">
+        The gateway: mesh access without FIPS software
+      </h2>
+
+      <p>
+        The adapter solves "how does SSH on this host reach a mesh peer". The gateway solves "how
+        does SSH on a laptop that does not run FIPS reach the same peer through a home server that
+        does".
+      </p>
+
+      <p>
+        <code class="mono">fips-gateway</code> is a separate binary that runs alongside the daemon. It
+        listens for DNS queries from the LAN, forwards <code class="mono">.fips</code> names to the daemon's
+        resolver, allocates a virtual IP from a configured pool (typically
+        <code class="mono">fd01::/112</code>), and installs nftables rules to NAT traffic between
+        virtual IPs and real mesh addresses.
+      </p>
+
+      <div
+        class="not-prose my-4 rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-xs leading-relaxed overflow-x-auto"
+      >
+        <div class="text-fips-muted mb-2">LAN client → gateway → mesh</div>
+        <pre
+          class="text-fips-text">{`1. client: dig ssh-box.fips   → gateway DNS (port 53)
+2. gateway → daemon resolver (localhost:5354)
+3. daemon: resolves to fd00::beef, primes its identity cache
+4. gateway: allocates fd01::5, installs DNAT/SNAT rules
+5. client: ssh fd01::5 (i.e., the allocated virtual IP)
+6. kernel DNAT:        ip6 daddr fd01::5    → fd00::beef
+7. kernel masquerade:  ip6 saddr client_ip  → gateway's fd00::cafe
+8. packet flows out fips0 into the mesh
+9. reply: kernel SNAT reverses on the way back`}</pre>
+      </div>
+
+      <p>
+        The masquerade rule on the postrouting chain is load-bearing. Without it, the LAN client's
+        source address (<code class="mono">fd01::5</code>, meaningful only at this gateway) would go
+        out on the wire; mesh peers would have no way to route replies back. Every mesh packet
+        originating at the gateway carries
+        <em>the gateway's</em> fd00 address, not the client's virtual IP.
+      </p>
+
+      <p>
+        A consequence worth naming: every LAN host sharing a gateway shares the gateway's FIPS
+        identity to the rest of the mesh. Peers cannot tell one LAN client from another. That is
+        privacy-preserving for the clients, but it also means the gateway's reputation covers all of
+        them. The gateway is the correct trust boundary to reason about, not the individual laptop.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Pool lifecycle</h2>
+
+      <p>
+        Each virtual IP moves through four states. The short version: DNS query allocates, conntrack
+        promotes to active, TTL elapses into draining, and the IP is reclaimed only once sessions
+        clear and a grace period (default 60s) has passed. Pool exhaustion returns SERVFAIL rather
+        than evicting live mappings. Correctness for ongoing sessions always beats new allocations.
+      </p>
+
+      <div
+        class="not-prose my-4 rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-xs overflow-x-auto"
+      >
+        <pre
+          class="text-fips-text">{`ALLOCATED ──→ ACTIVE ──→ DRAINING ──→ FREE
+    │                                    ↑
+    └────────────────────────────────────┘
+         (TTL expired, no sessions ever)`}</pre>
+      </div>
+
+      <p>
+        That is the whole path from an unmodified <code class="mono">ssh</code>
+        invocation on a LAN laptop to an FSP session on the mesh: DNS query, virtual IP allocation, DNAT,
+        masquerade, TUN, FSP, mesh. Everything below the TUN the rest of this course has already covered.
+      </p>
+    </section>
+
+    <Quiz client:visible questions={getQuiz("12-ipv6-gateway")} title="Lesson quiz" />
+
+    <SeeAlso terms={["ipv6-ula", "tun", "identity-cache", "fips-gateway", "mtu", "node_addr"]} />
+    <LessonNav current={12} />
+  </article>
+</Base>
