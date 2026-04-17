@@ -23,6 +23,17 @@ function fipsSrc(path: string, line: number): string {
   return `${REPO}/blob/${FIPS_PIN}/${path}#L${line}`;
 }
 
+/**
+ * Fallback for symbols that are not pinned to a single definition, or that
+ * live in enough places that a search is more useful than one permalink.
+ * Example: `link_cost` is read all over the codebase, so a repo-scoped code
+ * search beats a single call site.
+ */
+function fipsSearch(symbol: string): string {
+  const q = encodeURIComponent(`repo:jmcorgan/fips ${symbol}`);
+  return `https://github.com/search?q=${q}&type=code`;
+}
+
 export interface CodeLink {
   /** The literal token as it appears in prose, e.g. "find_next_hop". */
   symbol: string;
@@ -107,5 +118,10 @@ export const codeLinks: CodeLink[] = [
     symbol: "NodeError",
     url: fipsSrc("src/node/mod.rs", 61),
     label: "enum NodeError in src/node/mod.rs",
+  },
+  {
+    symbol: "link_cost",
+    url: fipsSearch("link_cost"),
+    label: "link_cost across the fips repo (GitHub code search)",
   },
 ];
