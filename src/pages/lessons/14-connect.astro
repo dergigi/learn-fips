@@ -27,7 +27,12 @@ const SOVENG_PODCAST_URL =
       <h2 class="text-xl font-semibold mt-2 mb-4">Reach out on Nostr</h2>
 
       <p class="text-fips-muted text-sm">
-        FIPS is a Nostr-native project. Most discussion happens there. The <a
+        FIPS is a Nostr-native project. Most discussion happens there, under the <a
+          href={FIPS_HASHTAG_URL}
+          target="_blank"
+          rel="noopener"
+          class="text-fips-accent underline"><code class="font-mono">#FIPS</code> hashtag</a
+        >. The <a
           href={FIPS_CONTRIBUTORS}
           target="_blank"
           rel="noopener"
@@ -144,7 +149,7 @@ const SOVENG_PODCAST_URL =
 
       <h2 class="text-xl font-semibold mt-8 mb-4">Hear it from the source</h2>
 
-      <div class="grid md:grid-cols-3 gap-3 not-prose my-2">
+      <div class="grid md:grid-cols-2 gap-3 not-prose my-2">
         <a
           href={FIPS_ANNOUNCEMENT_URL}
           target="_blank"
@@ -165,19 +170,6 @@ const SOVENG_PODCAST_URL =
           <div class="font-semibold text-fips-accent mb-1">No Solutions #24</div>
           <div class="text-xs text-fips-muted">
             36-minute walk through the origin story and where the protocol is going next.
-          </div>
-        </a>
-        <a
-          href={FIPS_HASHTAG_URL}
-          target="_blank"
-          rel="noopener"
-          class="rounded-lg border border-fips-border p-4 bg-fips-surface/30 hover:border-fips-accent/40 transition-colors block"
-        >
-          <div class="font-semibold text-fips-accent mb-1">
-            <code class="font-mono">#FIPS</code> on Nostr
-          </div>
-          <div class="text-xs text-fips-muted">
-            Live hashtag feed of builds, test-node topology, and protocol chatter.
           </div>
         </a>
       </div>
