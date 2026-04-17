@@ -77,11 +77,6 @@ import { lessons } from "../data/lessons";
     } from "../lib/progress";
 
     const lessonSlugByNumber = new Map<number, string>();
-    document.querySelectorAll<HTMLElement>(".lesson-card").forEach((card) => {
-      const n = Number(card.dataset.lesson);
-      const slug = card.dataset.slug;
-      if (n && slug) lessonSlugByNumber.set(n, slug);
-    });
 
     function render() {
       const p = loadProgress(lessonSlugByNumber);
@@ -145,12 +140,27 @@ import { lessons } from "../data/lessons";
       if (resetBtn) resetBtn.classList.toggle("hidden", !anyProgress);
     }
 
-    render();
-
-    document.getElementById("reset-progress-btn")?.addEventListener("click", () => {
-      if (!confirm("Reset all lesson progress and quiz attempts?")) return;
-      resetProgress();
+    function wire() {
+      // lessonSlugByNumber is derived from the currently visible DOM, so
+      // re-derive it when the page is swapped in by the view router.
+      lessonSlugByNumber.clear();
+      document.querySelectorAll<HTMLElement>(".lesson-card").forEach((card) => {
+        const n = Number(card.dataset.lesson);
+        const slug = card.dataset.slug;
+        if (n && slug) lessonSlugByNumber.set(n, slug);
+      });
       render();
-    });
+      const btn = document.getElementById("reset-progress-btn");
+      if (btn && btn.dataset.wired !== "1") {
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", () => {
+          if (!confirm("Reset all lesson progress and quiz attempts?")) return;
+          resetProgress();
+          render();
+        });
+      }
+    }
+
+    document.addEventListener("astro:page-load", wire);
   </script>
 </Base>

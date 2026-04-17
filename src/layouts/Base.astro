@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 import { lessons } from "../data/lessons";
 
 interface Props {
@@ -49,9 +50,14 @@ const fullTitle = `${title} | Learn FIPS`;
       rel="stylesheet"
     />
     <title>{fullTitle}</title>
+    <ClientRouter />
   </head>
   <body class="flex flex-col min-h-dvh">
-    <nav class="border-b border-fips-border bg-fips-surface/80 backdrop-blur-sm sticky top-0 z-50">
+    <nav
+      transition:persist
+      transition:name="site-nav"
+      class="border-b border-fips-border bg-fips-surface/80 backdrop-blur-sm sticky top-0 z-50"
+    >
       <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 text-fips-accent font-bold tracking-tight">
           <span class="text-xl">⬡</span>
@@ -185,16 +191,25 @@ const fullTitle = `${title} | Learn FIPS`;
     <script>
       import { markVisited } from "../lib/progress";
 
-      const btn = document.getElementById("mobile-menu-btn");
-      const menu = document.getElementById("mobile-menu");
-      btn?.addEventListener("click", () => {
-        const open = menu?.classList.toggle("hidden") === false;
-        btn.setAttribute("aria-expanded", String(open));
-      });
+      function wireMobileMenu() {
+        const btn = document.getElementById("mobile-menu-btn");
+        const menu = document.getElementById("mobile-menu");
+        if (!btn || btn.dataset.wired === "1") return;
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", () => {
+          const open = menu?.classList.toggle("hidden") === false;
+          btn.setAttribute("aria-expanded", String(open));
+        });
+      }
 
-      // Mark the current lesson as visited in the shared progress store.
-      const slug = window.location.pathname.match(/\/lessons\/([^/]+)/)?.[1];
-      if (slug) markVisited(slug);
+      function onPageLoad() {
+        wireMobileMenu();
+        // Mark the current lesson as visited in the shared progress store.
+        const slug = window.location.pathname.match(/\/lessons\/([^/]+)/)?.[1];
+        if (slug) markVisited(slug);
+      }
+
+      document.addEventListener("astro:page-load", onPageLoad);
     </script>
   </body>
 </html>
