@@ -71,4 +71,11 @@ export const lessons: Lesson[] = [
     title: "Measuring the Mesh",
     description: "MMP, link cost, and how per-link RTT and loss push traffic onto better parents.",
   },
+  {
+    slug: "11-threat-model",
+    number: 11,
+    title: "Who Sees What",
+    description:
+      "The four adversary classes FIPS is designed against, and what each one can actually read off the wire.",
+  },
 ];

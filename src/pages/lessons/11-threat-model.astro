@@ -1,0 +1,159 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import ThreatLens from "../../components/ThreatLens";
+import { getQuiz } from "../../data/quizzes";
+---
+
+<Base title="Who Sees What">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 11</p>
+    <h1 class="text-3xl font-bold mb-8">Who Sees What</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        A threat model is a list of actors you are defending against, what powers they have, and
+        what each defense actually buys you. FIPS calls out four such actor classes in its intro
+        spec. Every layer of the protocol exists to answer one of them.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The four adversary classes</h2>
+
+      <div class="not-prose my-4 grid md:grid-cols-2 gap-3">
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">Transport observer</p>
+          <p class="text-xs text-fips-muted">
+            Passive capture on the underlying medium: tcpdump on WiFi, a tap on Ethernet, a radio
+            receiver. Reads bytes, times them, counts them.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">Active attacker</p>
+          <p class="text-xs text-fips-muted">
+            Same vantage as the observer, plus can inject, modify, drop, or replay transport packets
+            at will.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">Other FIPS node</p>
+          <p class="text-xs text-fips-muted">
+            A real peer in the mesh. It decrypts the link frames it is party to, forwards sessions,
+            and might be run by someone curious or hostile.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">Disruptive node</p>
+          <p class="text-xs text-fips-muted">
+            An FIPS node trying to break routing: forged TreeAnnounces, poisoned bloom filters,
+            Sybil clusters, eclipse attempts.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Which defense answers which adversary</h2>
+
+      <p>
+        Each layer in the stack is pointed at a specific class of attacker. That is why FIPS has two
+        separate encryption contexts rather than one:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">FMP Noise IK</span> handles the two transport-level adversaries.
+          Every byte that leaves the NIC is encrypted under a per-link session, with AEAD integrity and
+          replay protection. A tcpdump yields ciphertext.
+        </li>
+        <li>
+          <span class="text-fips-text">FSP Noise XK</span> handles the transit router. The mesh can forward
+          a packet through an arbitrary number of untrusted hops and still keep the payload and the source
+          npub out of their reach. Each hop decrypts FMP, forwards, re-encrypts FMP to the next hop, and
+          never touches the FSP AEAD.
+        </li>
+        <li>
+          <span class="text-fips-text">Signed announces and discretionary peering</span>
+          handle disruptive nodes. TreeAnnounce messages carry a Schnorr signature over the ancestry chain,
+          so a liar cannot forge a better tree position. Handshake rate limits throttle Sybil creation.
+          You control who becomes a direct peer.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The visibility matrix</h2>
+
+      <p>
+        Pick an adversary. The control below shows which protocol artifacts they can actually
+        observe, which are opaque to them, and what keeps the opaque ones opaque.
+      </p>
+
+      <ThreatLens client:visible />
+
+      <p>
+        Two rows are worth sitting with. The transit router row has
+        <code class="mono">node_addr</code> marked visible but
+        <code class="mono">npub</code> marked opaque. That is the whole point of hashing the key into
+        a separate routing address: you can forward traffic without learning which Nostr identities are
+        on either end. Someone who already knows a candidate npub can of course test whether it matches
+        a given node_addr, but the router itself cannot enumerate identities from routed traffic.
+      </p>
+
+      <p>
+        The destination row looks scary (npub, payload, timing all visible) but that is the working
+        definition of an endpoint. The defense is social, not cryptographic: if you do not want
+        someone to know you are talking to them, do not open a session to them. FSP's job is only to
+        make sure no one <em>else</em> can read that session.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">What FIPS does not claim</h2>
+
+      <p>
+        The intro spec is explicit about two non-goals, and it is worth being equally explicit here:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">No anonymity.</span> Direct peers learn each other's npub through
+          the FMP Noise IK handshake. There is no mixing layer, no cover traffic, no tunnel rotation.
+          Tor and I2P solve a different problem.
+        </li>
+        <li>
+          <span class="text-fips-text">No traffic analysis resistance.</span>
+          A global observer with vantage points on multiple transports can correlate flow timing and size
+          patterns across the mesh to infer who is talking to whom. FIPS does not pad, mix, or batch to
+          defeat this. Confidentiality is protected; the fact that a conversation is happening is not.
+        </li>
+      </ul>
+
+      <p>
+        Those limits are load-bearing. They are why FIPS can run on low-power devices with lossy
+        radio links, which a mix network generally cannot. A future anonymizing overlay could sit on
+        top of FIPS the same way Tor sits on top of TCP, but it is not in scope for the base
+        protocol.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Eclipse resistance in practice</h2>
+
+      <p>
+        Eclipse is the subtle one. An attacker who controls every direct peer of a target controls
+        what the target knows. The mesh-layer crypto cannot save you here: all the forged
+        TreeAnnounces are signed by the attacker's own valid identities. The only real defense is
+        topological.
+      </p>
+
+      <p>
+        Curated deployments should peer across different operators and different transport types:
+        one peer over the apartment WiFi, one over a friend's UDP overlay, one over LoRa. An
+        attacker has to compromise operators and transports at once. Automatic peer discovery
+        weakens this, which is why the spec notes that open deployments lean on handshake rate
+        limits rather than strong Sybil guarantees.
+      </p>
+    </section>
+
+    <Quiz client:visible questions={getQuiz("11-threat-model")} title="Lesson quiz" />
+
+    <SeeAlso
+      terms={["noise-ik", "noise-xk", "sybil", "eclipse", "traffic-analysis", "node_addr"]}
+    />
+    <LessonNav current={11} />
+  </article>
+</Base>

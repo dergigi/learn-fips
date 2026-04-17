@@ -483,4 +483,81 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "CE is sticky across hops. At the final destination the IPv6 adapter writes CE into the Traffic Class ECN bits (only if the inner packet was ECT-capable). Standard TCP ECN then takes over end to end.",
     },
   ],
+  "11-threat-model": [
+    {
+      question:
+        "Which layer defends against a passive observer on the underlying WiFi or Ethernet?",
+      options: [
+        "FSP Noise XK session encryption.",
+        "FMP Noise IK link encryption.",
+        "Schnorr-signed TreeAnnounces.",
+        "Bloom filter split-horizon propagation.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "FMP wraps every link frame (routing gossip included) in a Noise IK AEAD session, so a tcpdump on the underlying transport only yields ciphertext.",
+    },
+    {
+      question:
+        "A transit router forwards an FSP session between two other nodes. What can it read?",
+      options: [
+        "The source and destination npubs.",
+        "The application payload inside the FSP AEAD.",
+        "The SessionDatagram routing envelope (node_addrs, ttl, path_mtu) and the FSP cleartext header.",
+        "Nothing: transit routers receive encrypted opaque blobs.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "Transit routers decrypt FMP to learn what to forward. They see node_addrs on the routing envelope and the FSP cleartext header (flags, receiver_idx, counter). The FSP AEAD payload stays sealed, and npub never appears there.",
+    },
+    {
+      question: "Why does the routing envelope carry node_addr instead of npub?",
+      options: [
+        "node_addr is shorter, so packets are smaller.",
+        "It lets routers forward traffic without learning which Nostr identities are communicating.",
+        "npub is not defined at the mesh layer.",
+        "node_addr is required by IPv6.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "node_addr is a SHA-256 hash of the public key. Routers route on it; they cannot recover the npub from it. Someone who already knows a candidate npub can test a match, but they cannot enumerate from routed traffic.",
+    },
+    {
+      question: "Which of these is NOT a claim FIPS makes?",
+      options: [
+        "Direct peers cannot read forwarded session payloads.",
+        "Active attackers on the transport cannot inject or modify link frames.",
+        "FIPS hides the fact that a conversation is happening from a global observer.",
+        "Transit routers cannot derive endpoint npubs from routed packets.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "Traffic analysis is a documented non-goal. FIPS protects confidentiality and integrity. It does not pad or mix, so a global observer with vantage on multiple transports can still correlate who is talking to whom.",
+    },
+    {
+      question:
+        "In an open network with automatic peer discovery, what primarily resists Sybil attacks?",
+      options: [
+        "Noise XK identity hiding.",
+        "Per-peer handshake rate limits.",
+        "Bloom filter bit diversity.",
+        "IPv6 ULA randomization.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Curated deployments rely on discretionary peering (operators vet their peers). Open deployments fall back to rate-limiting how fast any one attacker can hand-shake new identities onto the mesh.",
+    },
+    {
+      question: "Why is topological diversity the main defense against eclipse attacks?",
+      options: [
+        "Signed announces stop working when many identities collude.",
+        "Peering across independent operators and transports makes it hard for one adversary to control all of your peers at once.",
+        "The spanning tree rebuilds faster with more peers.",
+        "Encryption fails if every peer is hostile.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "If every direct peer of a target is controlled by the same adversary, that adversary dictates the target's view of the mesh. No amount of cryptography fixes that. The defense is topological: spread peers across operators and transports.",
+    },
+  ],
 };

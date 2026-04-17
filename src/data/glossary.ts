@@ -224,6 +224,34 @@ export const glossary: GlossaryTerm[] = [
     lessons: [8],
     tags: ["routing"],
   },
+  {
+    id: "sybil",
+    term: "Sybil attack",
+    summary: "One operator spinning up many fake identities to overwhelm a peer-to-peer protocol.",
+    detail:
+      "FIPS resists Sybil attacks two ways: per-peer handshake rate limits cap how quickly a single attacker can bring new identities online, and discretionary peering means operators in curated deployments hand-pick who they accept as a direct neighbor. Automatic peer discovery falls back to rate limits alone.",
+    lessons: [11],
+    tags: ["security"],
+  },
+  {
+    id: "eclipse",
+    term: "Eclipse attack",
+    summary: "Surrounding a target node with attacker-controlled peers so the target sees a lie.",
+    detail:
+      "If every direct peer of a node is controlled by the same adversary, the adversary fully controls what that node learns about the mesh: which root it picks, which coordinates it caches, which destinations it can reach. The mitigation is diverse peering across independent operators and transports.",
+    lessons: [11],
+    tags: ["security"],
+  },
+  {
+    id: "traffic-analysis",
+    term: "Traffic analysis",
+    summary:
+      "Correlating packet timing and volume at multiple vantage points to infer who is talking to whom.",
+    detail:
+      "FIPS encrypts content at two layers but does not pad, mix, or cover traffic. A global passive observer who sees several transports at once can still correlate flows and infer communicating pairs. This is a documented non-goal: FIPS is not an anonymity network.",
+    lessons: [11],
+    tags: ["security"],
+  },
 ];
 
 export function getTerm(id: string): GlossaryTerm | undefined {
