@@ -19,7 +19,7 @@ const canonical = new URL(currentPath, site).toString();
 const lessonSlug = currentPath.match(/\/lessons\/([^/]+)/)?.[1];
 const isGlossary = currentPath.startsWith("/glossary");
 const ogSlug = lessonSlug ?? (isGlossary ? "glossary" : "default");
-const resolvedOgImage = ogImage ?? `/og/${ogSlug}.svg`;
+const resolvedOgImage = ogImage ?? `/og/${ogSlug}.png`;
 const ogImageUrl = new URL(resolvedOgImage, site).toString();
 const fullTitle = `${title} | Learn FIPS`;
 ---
