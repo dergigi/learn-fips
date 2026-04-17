@@ -664,6 +664,13 @@ export default function RecoveryFlow() {
       <div className="flex flex-wrap gap-2 text-xs">
         <button
           type="button"
+          onClick={reset}
+          className="px-3 py-1 rounded border border-fips-border text-fips-muted"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
           onClick={() => {
             stop();
             setFrameIdx(Math.max(0, frameIdx - 1));
@@ -690,13 +697,6 @@ export default function RecoveryFlow() {
           className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold"
         >
           {playLabel}
-        </button>
-        <button
-          type="button"
-          onClick={reset}
-          className="px-3 py-1 rounded border border-fips-border text-fips-muted"
-        >
-          Reset
         </button>
       </div>
     </div>

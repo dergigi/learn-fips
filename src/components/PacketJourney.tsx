@@ -302,6 +302,13 @@ export default function PacketJourney() {
       {/* Controls */}
       <div className="flex gap-2 text-xs">
         <button
+          onClick={reset}
+          disabled={!playing && atStart}
+          className="px-3 py-1 rounded border border-fips-border text-fips-muted hover:border-fips-accent/40 hover:text-fips-text transition-colors disabled:opacity-30"
+        >
+          Reset
+        </button>
+        <button
           onClick={() => {
             pause();
             setStepIdx(Math.max(0, stepIdx - 1));
@@ -326,13 +333,6 @@ export default function PacketJourney() {
           className="px-3 py-1 rounded bg-fips-accent text-fips-bg font-semibold"
         >
           {playLabel}
-        </button>
-        <button
-          onClick={reset}
-          disabled={!playing && atStart}
-          className="px-3 py-1 rounded border border-fips-border text-fips-muted hover:border-fips-accent/40 hover:text-fips-text transition-colors disabled:opacity-30"
-        >
-          Reset
         </button>
       </div>
     </div>
