@@ -48,6 +48,7 @@ export const contributors: Contributor[] = [
   {
     github: "dskvr",
     name: "sandwich",
+    npub: "npub1uac67zc9er54ln0kl6e4qp2y6ta3enfcg7ywnayshvlw9r5w6ehsqq99rx",
   },
   {
     github: "SatsAndSports",
