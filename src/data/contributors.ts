@@ -2,10 +2,9 @@
  * People (and the project account) to reach out to on Nostr.
  *
  * The human list is pulled from
- * https://github.com/jmcorgan/fips/graphs/contributors, curated to
- * everyone with 2+ commits so the section stays focused. The project
+ * https://github.com/jmcorgan/fips/graphs/contributors. The project
  * account comes first since it is the single most useful follow for
- * anyone new to FIPS.
+ * anyone new to FIPS; contributors follow, roughly by commit count.
  *
  * When a contributor's `npub` is set, the card renders as a Nostr link
  * via njump.to. When it is not, the card falls back to the GitHub
@@ -100,5 +99,10 @@ export const contributors: Contributor[] = [
     github: "sh1ftred",
     name: "red",
     npub: "npub1ftt05tgku25m2akgvw6v7aqy5ux5mseqcrzy05g26ml43xf74nyqsredsh",
+  },
+  {
+    github: "0ceanSlim",
+    name: "OceanSlim",
+    npub: "npub1zmc6qyqdfnllhnzzxr5wpepfpnzcf8q6m3jdveflmgruqvd3qa9sjv7f60",
   },
 ];
