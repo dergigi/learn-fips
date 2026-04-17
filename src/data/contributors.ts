@@ -43,6 +43,7 @@ export const contributors: Contributor[] = [
   {
     github: "v0l",
     name: "Kieran",
+    npub: "npub1v0lxxxxutpvrelsksy8cdhgfux9l6a42hsj2qzquu2zk7vc9qnkszrqj49",
   },
   {
     github: "dskvr",
