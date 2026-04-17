@@ -56,8 +56,8 @@ export const codeLinks: CodeLink[] = [
   // src/node/mod.rs — routing and node lifecycle
   {
     symbol: "find_next_hop",
-    url: fipsSrc("src/node/mod.rs", 1617),
-    label: "Node::find_next_hop in src/node/mod.rs",
+    url: fipsSearch("find_next_hop"),
+    label: "find_next_hop across the fips repo (GitHub code search)",
   },
   {
     symbol: "select_best_candidate",
