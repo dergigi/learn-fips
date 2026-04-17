@@ -17,6 +17,44 @@ export function hasQuiz(slug: string): boolean {
 }
 
 export const quizzes: Record<string, QuizQuestion[]> = {
+  "1-what-is-fips": [
+    {
+      question: "Which of these best captures what makes FIPS different from the classic internet?",
+      options: [
+        "It uses faster cryptography than TLS.",
+        "It replaces centralized services (ISPs, DNS, CAs) with a self-organizing peer mesh.",
+        "It is a drop-in replacement for IPv4 addressing.",
+        "It only works over WiFi and Bluetooth.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "FIPS is a peer-to-peer mesh: identity, naming, routing and encryption all come from the nodes themselves, not from centralized providers.",
+    },
+    {
+      question: "What does 'transport-agnostic' mean in the FIPS context?",
+      options: [
+        "Every packet must travel over every transport.",
+        "FIPS is only defined over UDP.",
+        "Any datagram-capable medium (WiFi, Ethernet, UDP overlay, Tor, serial, …) can carry FIPS traffic.",
+        "Transports must be identical on both sides of a link.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "Transports are pluggable drivers. The protocol above them is unchanged; only framing and peer discovery differ per transport.",
+    },
+    {
+      question: "Which problem does FIPS NOT try to solve by itself?",
+      options: [
+        "Bootstrapping identity without a central CA.",
+        "Making a mesh self-organize without a coordinator.",
+        "Replacing every application protocol above it.",
+        "Hiding endpoint identities from transit routers.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "FIPS is a networking layer. Applications still speak their own protocols on top of it; FIPS just delivers their packets.",
+    },
+  ],
   "2-identity": [
     {
       question: "What cryptographic curve does FIPS use for node identity?",
@@ -42,6 +80,83 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       correctIndex: 2,
       explanation:
         "The IPv6 address is deterministic: 0xfd prefix + first 15 bytes of node_addr, placing it in the fd00::/8 ULA space.",
+    },
+  ],
+  "3-protocol-stack": [
+    {
+      question:
+        "Which layer handles end-to-end encryption between the original sender and recipient?",
+      options: [
+        "FMP (FIPS Mesh Protocol)",
+        "FSP (FIPS Session Protocol)",
+        "MMP (Measurement Protocol)",
+        "The TUN adapter",
+      ],
+      correctIndex: 1,
+      explanation:
+        "FSP wraps the user's payload in Noise XK between the two endpoints. Transit routers can re-encrypt link segments at the FMP layer but never see FSP plaintext.",
+    },
+    {
+      question: "Why does every link re-encrypt the packet under a fresh Noise IK session (FMP)?",
+      options: [
+        "So transit routers can read the payload.",
+        "To authenticate each hop and hide packet contents from observers on that specific medium.",
+        "To prevent the recipient from decrypting the packet.",
+        "To reduce packet size.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Hop-by-hop encryption authenticates neighbors and hides packet contents from anyone watching the physical link, without ever exposing the end-to-end payload.",
+    },
+    {
+      question: `What is the net per-packet overhead for IPv6 traffic through FIPS, and how is it computed?`,
+      options: [
+        `${FIPS_BASE_OVERHEAD} bytes — the full base protocol overhead, with no optimizations.`,
+        `${FIPS_IPV6_OVERHEAD} bytes = ${FIPS_BASE_OVERHEAD} base − ${FIPS_IPV6_HEADER_SAVINGS} (IPv6 header compression) + ${FIPS_IPV6_PORT_HEADER} (port header).`,
+        `${FIPS_IPV6_HEADER_SAVINGS} bytes, because IPv6 compression removes the rest.`,
+        `0 bytes — FIPS inherits the IPv6 MTU unchanged.`,
+      ],
+      correctIndex: 1,
+      explanation: `Base protocol overhead is ${FIPS_BASE_OVERHEAD}B; the IPv6 adapter saves ${FIPS_IPV6_HEADER_SAVINGS}B via header compression and adds a ${FIPS_IPV6_PORT_HEADER}B port header, netting ${FIPS_IPV6_OVERHEAD}B (FIPS_IPV6_OVERHEAD in src/lib/constants.ts).`,
+    },
+  ],
+  "4-transports": [
+    {
+      question: "Which of the following could NOT reasonably be a FIPS transport?",
+      options: [
+        "UDP overlay over the public internet.",
+        "A direct Ethernet LAN segment.",
+        "A Tor onion service endpoint.",
+        "Something that has no way to move bytes between machines.",
+      ],
+      correctIndex: 3,
+      explanation:
+        "Anything that can move datagrams between two peers can be a transport. 'No way to move bytes' is the one thing FIPS can't paper over.",
+    },
+    {
+      question: "What must two nodes have in common to link over a given transport?",
+      options: [
+        "The same operating system.",
+        "A shared static FIPS key distributed out of band.",
+        "Both must speak that transport's framing and discovery protocol.",
+        "Both must be on the same physical medium.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "Each transport defines its own framing and peer discovery. If both peers implement the same transport driver, they can form a FIPS link.",
+    },
+    {
+      question:
+        "A node is on WiFi and Ethernet at the same time. What does FIPS do with these transports?",
+      options: [
+        "Forces one of them to shut down.",
+        "Runs both independently; the node can bridge peers on different media into the same mesh.",
+        "Encapsulates one inside the other.",
+        "Requires the user to pick a primary transport.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Transports are independent drivers. A node can run many at once and acts as a bridge between peers that don't share a medium.",
     },
   ],
   "5-spanning-tree": [

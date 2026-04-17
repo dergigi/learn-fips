@@ -3,6 +3,8 @@ import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import SeeAlso from "../../components/SeeAlso.astro";
 import TransportGrid from "../../components/TransportGrid";
+import Quiz from "../../components/Quiz";
+import { getQuiz } from "../../data/quizzes";
 ---
 
 <Base title="Transports">
@@ -87,6 +89,8 @@ import TransportGrid from "../../components/TransportGrid";
         </div>
       </div>
     </section>
+
+    <Quiz client:visible questions={getQuiz("4-transports")} title="Transports Quiz" />
 
     <SeeAlso terms={["transport", "fmp"]} />
     <LessonNav current={4} />

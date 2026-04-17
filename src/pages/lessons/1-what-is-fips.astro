@@ -2,6 +2,8 @@
 import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import { getQuiz } from "../../data/quizzes";
 ---
 
 <Base title="What is FIPS?">
@@ -151,6 +153,8 @@ import SeeAlso from "../../components/SeeAlso.astro";
         address, a routing ID, and IPv6 compatibility.
       </p>
     </section>
+
+    <Quiz client:visible questions={getQuiz("1-what-is-fips")} title="Orientation Quiz" />
 
     <SeeAlso terms={["fips", "node_addr", "transport"]} />
     <LessonNav current={1} />

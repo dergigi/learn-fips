@@ -3,6 +3,8 @@ import Base from "../../layouts/Base.astro";
 import LessonNav from "../../components/LessonNav.astro";
 import SeeAlso from "../../components/SeeAlso.astro";
 import ProtocolStack from "../../components/ProtocolStack";
+import Quiz from "../../components/Quiz";
+import { getQuiz } from "../../data/quizzes";
 import {
   FIPS_BASE_OVERHEAD,
   FIPS_IPV6_HEADER_SAVINGS,
@@ -129,6 +131,8 @@ import {
         per packet. Enough for most TCP segments without fragmentation.
       </p>
     </section>
+
+    <Quiz client:visible questions={getQuiz("3-protocol-stack")} title="Protocol Stack Quiz" />
 
     <SeeAlso terms={["fmp", "fsp", "mmp"]} />
     <LessonNav current={3} />
