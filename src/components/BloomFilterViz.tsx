@@ -50,6 +50,28 @@ export default function BloomFilterViz() {
     setQueryResult(null);
   }
 
+  function pickRandom() {
+    // Insert a random subset (half the nodes, give or take) so the filter
+    // is populated enough to produce false positives but not fully saturated.
+    const shuffled = [...NODE_IDS].sort(() => Math.random() - 0.5);
+    const target = 3 + Math.floor(Math.random() * 4); // 3..6
+    const inserted = shuffled.slice(0, target);
+    const insertedSetLocal = new Set(inserted);
+
+    // Prefer a not-yet-inserted query so the learner sees the interesting case
+    // (either a confirmed absence or a false positive).
+    const notInserted = NODE_IDS.filter((id) => !insertedSetLocal.has(id));
+    const queryChoice =
+      notInserted.length > 0
+        ? notInserted[Math.floor(Math.random() * notInserted.length)]!
+        : NODE_IDS[Math.floor(Math.random() * NODE_IDS.length)]!;
+
+    setInsertedNames(inserted);
+    setInsertPick(notInserted[0] ?? NODE_IDS[0]!);
+    setQueryPick(queryChoice);
+    setQueryResult(null);
+  }
+
   const bitArray: boolean[] = [];
   for (let i = 0; i < BIT_SIZE * 8; i++) {
     bitArray.push(!!(filter.bits[i >> 3]! & (1 << (i & 7))));
@@ -118,8 +140,34 @@ export default function BloomFilterViz() {
 
         <button
           type="button"
+          onClick={pickRandom}
+          aria-label="Insert a random subset and pick a random query"
+          title="Random scenario"
+          className="px-2 py-1.5 rounded border border-fips-border hover:border-fips-accent/40 transition-colors text-fips-muted hover:text-fips-accent ml-auto"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+            <circle cx="8" cy="8" r="1" fill="currentColor" />
+            <circle cx="16" cy="8" r="1" fill="currentColor" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+            <circle cx="8" cy="16" r="1" fill="currentColor" />
+            <circle cx="16" cy="16" r="1" fill="currentColor" />
+          </svg>
+        </button>
+        <button
+          type="button"
           onClick={reset}
-          className="px-3 py-1.5 rounded border border-fips-border text-fips-muted text-sm ml-auto"
+          className="px-3 py-1.5 rounded border border-fips-border text-fips-muted text-sm"
         >
           Reset
         </button>
