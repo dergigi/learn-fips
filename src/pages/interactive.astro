@@ -1,0 +1,427 @@
+---
+import Base from "../layouts/Base.astro";
+import { lessons } from "../data/lessons";
+import IdentityGenerator from "../components/IdentityGenerator";
+import ProtocolStack from "../components/ProtocolStack";
+import TransportGrid from "../components/TransportGrid";
+import MeshSimulator from "../components/MeshSimulator";
+import BloomFilterViz from "../components/BloomFilterViz";
+import RoutingDemo from "../components/RoutingDemo";
+import PacketJourney from "../components/PacketJourney";
+import RecoveryFlow from "../components/RecoveryFlow";
+import PacketInspector from "../components/PacketInspector";
+import LinkCostLab from "../components/LinkCostLab";
+import ThreatLens from "../components/ThreatLens";
+import AdapterMtuLab from "../components/AdapterMtuLab";
+import InstallPicker from "../components/InstallPicker";
+
+interface Widget {
+  id: string;
+  title: string;
+  blurb: string;
+  lessonNumber: number;
+}
+
+// Order of appearance across the lesson sequence. Keep in sync with
+// the component instances below; the TOC is generated from this list.
+const widgets: Widget[] = [
+  {
+    id: "identity-generator",
+    title: "Identity Generator",
+    blurb: "Generate a keypair and watch it derive into a 16-byte node_addr and a .fips hostname.",
+    lessonNumber: 2,
+  },
+  {
+    id: "protocol-stack",
+    title: "Protocol Stack",
+    blurb: "Click through FIPS's four layers to see what each one is responsible for.",
+    lessonNumber: 3,
+  },
+  {
+    id: "transport-grid",
+    title: "Transport Grid",
+    blurb: "UDP, TCP, Ethernet, Tor, BLE, serial — same protocol, same mesh.",
+    lessonNumber: 4,
+  },
+  {
+    id: "mesh-simulator",
+    title: "Mesh Simulator",
+    blurb:
+      "A live spanning tree with greedy-coordinate routing, bloom-filter hints, random routes, and a tidy-layout button.",
+    lessonNumber: 5,
+  },
+  {
+    id: "bloom-filter-viz",
+    title: "Bloom Filter",
+    blurb:
+      "Insert and query node addresses against a bloom filter and watch false positives light up the bit array.",
+    lessonNumber: 5,
+  },
+  {
+    id: "routing-demo",
+    title: "Routing Decision",
+    blurb:
+      "Walk through the find_next_hop priority chain (self, direct peer, bloom, tree, fail) one case at a time.",
+    lessonNumber: 5,
+  },
+  {
+    id: "packet-journey",
+    title: "Packet Journey",
+    blurb:
+      "A packet's two encryption layers (FMP hop-by-hop, FSP end-to-end) across three hops, step by step.",
+    lessonNumber: 6,
+  },
+  {
+    id: "recovery-flow",
+    title: "Error Recovery",
+    blurb:
+      "Replay CoordsRequired, PathBroken, and MtuExceeded signals and watch the mesh heal around the failure.",
+    lessonNumber: 8,
+  },
+  {
+    id: "packet-inspector",
+    title: "Packet Inspector",
+    blurb:
+      "Toggle FIPS packet fields and watch the byte layout and per-layer overhead update in real time.",
+    lessonNumber: 9,
+  },
+  {
+    id: "link-cost-lab",
+    title: "Link Cost Lab",
+    blurb:
+      "Tune RTT, loss, and jitter on a candidate parent and see how MMP-weighted cost changes the tree.",
+    lessonNumber: 10,
+  },
+  {
+    id: "threat-lens",
+    title: "Threat Lens",
+    blurb: "Pick an adversary class and see what they can actually read off a FIPS frame.",
+    lessonNumber: 11,
+  },
+  {
+    id: "adapter-mtu-lab",
+    title: "Adapter MTU Lab",
+    blurb:
+      "Play with transport_mtu and watch effective_ipv6_mtu and clamped TCP MSS recompute in lockstep.",
+    lessonNumber: 12,
+  },
+  {
+    id: "install-picker",
+    title: "Install Picker",
+    blurb:
+      "Pick your platform and get the exact install commands, test-mesh config, and verification steps.",
+    lessonNumber: 13,
+  },
+];
+
+const lessonByNumber = new Map(lessons.map((l) => [l.number, l] as const));
+
+function meta(id: string) {
+  const w = widgets.find((x) => x.id === id);
+  if (!w) throw new Error(`Unknown widget ${id}`);
+  const l = lessonByNumber.get(w.lessonNumber);
+  if (!l) throw new Error(`Unknown lesson ${w.lessonNumber} for ${id}`);
+  return { widget: w, lesson: l };
+}
+---
+
+<Base title="Interactive">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Playground</p>
+    <h1 class="text-3xl font-bold mb-4">Interactive</h1>
+
+    <p class="text-fips-muted mb-8">
+      Every interactive widget from the lessons, on one page, in order of appearance. Each one links
+      back to the lesson it lives in so you can read the prose around it.
+    </p>
+
+    <nav aria-label="Widget index" class="mb-10 rounded-lg border border-fips-border p-4">
+      <p class="text-xs uppercase tracking-wider text-fips-muted mb-2">On this page</p>
+      <ol class="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-sm list-decimal pl-5">
+        {
+          widgets.map((w) => (
+            <li>
+              <a href={`#${w.id}`} class="text-fips-accent hover:underline">
+                {w.title}
+              </a>{" "}
+              <span class="text-fips-muted text-xs">L{w.lessonNumber}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("identity-generator");
+        return (
+          <section id={w.id} class="scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <IdentityGenerator client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("protocol-stack");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <ProtocolStack client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("transport-grid");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <TransportGrid client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("mesh-simulator");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <MeshSimulator client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("bloom-filter-viz");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <BloomFilterViz client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("routing-demo");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <RoutingDemo client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("packet-journey");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <PacketJourney client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("recovery-flow");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <RecoveryFlow client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("packet-inspector");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <PacketInspector client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("link-cost-lab");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <LinkCostLab client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("threat-lens");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <ThreatLens client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("adapter-mtu-lab");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <AdapterMtuLab client:visible />
+          </section>
+        );
+      })()
+    }
+
+    {
+      (() => {
+        const { widget: w, lesson: l } = meta("install-picker");
+        return (
+          <section id={w.id} class="mt-12 pt-6 border-t border-fips-border scroll-mt-20">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+              <h2 class="text-xl font-semibold">{w.title}</h2>
+              <a
+                href={`/lessons/${l.slug}`}
+                class="text-xs font-mono text-fips-muted hover:text-fips-accent transition-colors"
+              >
+                Lesson {w.lessonNumber}: {l.title} &rarr;
+              </a>
+            </div>
+            <p class="text-fips-muted text-sm mb-4">{w.blurb}</p>
+            <InstallPicker client:visible />
+          </section>
+        );
+      })()
+    }
+  </article>
+</Base>
