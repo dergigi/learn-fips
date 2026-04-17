@@ -94,6 +94,60 @@ article li a {
 }
 
 /*
+ * Collapsible lesson sections (see src/components/CollapsibleSection.astro).
+ * The <summary> row renders the H2 heading plus a chevron that rotates
+ * when the section is open. Zero-JS: the browser owns the open/closed
+ * state, which means no hydration cost and smooth view-transition
+ * behavior.
+ */
+.collapsible > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  list-style: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible > summary:hover,
+.collapsible > summary:focus-visible {
+  background-color: color-mix(in srgb, var(--color-fips-surface) 50%, transparent);
+  border-color: color-mix(in srgb, var(--color-fips-accent) 25%, transparent);
+}
+
+.collapsible > summary > h2 {
+  margin: 0;
+}
+
+.collapsible-chevron {
+  color: var(--color-fips-muted);
+  flex-shrink: 0;
+  transition:
+    transform 160ms ease,
+    color 120ms ease;
+}
+
+.collapsible[open] > summary > .collapsible-chevron {
+  transform: rotate(180deg);
+}
+
+.collapsible > summary:hover > .collapsible-chevron,
+.collapsible[open] > summary > .collapsible-chevron {
+  color: var(--color-fips-accent);
+}
+
+/*
  * Low-emphasis link that inherits its surrounding text color and only
  * lights up in the accent on hover. Use inside muted prose where a
  * bright accent link would otherwise dominate the paragraph.

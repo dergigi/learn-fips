@@ -1,0 +1,44 @@
+---
+/**
+ * Lesson-section wrapper that renders an H2 heading which toggles the
+ * section body open and closed. Uses native <details>/<summary> so it
+ * works without JS and survives view transitions.
+ *
+ * Spacing is tuned to match a bare `<h2 class="text-xl font-semibold
+ * mt-8 mb-4">` followed by its content, so an author can swap one for
+ * the other without the surrounding rhythm shifting.
+ */
+interface Props {
+  /** Heading text. Rendered inside an <h2> for correct document outline. */
+  title: string;
+  /** Optional id to support anchor links to the heading. */
+  id?: string;
+  /** When true, the section starts expanded. Defaults to collapsed. */
+  open?: boolean;
+}
+
+const { title, id, open = false } = Astro.props;
+---
+
+<details class="collapsible group mt-8" open={open} id={id}>
+  <summary class="collapsible-summary">
+    <h2 class="text-xl font-semibold flex-1">{title}</h2>
+    <svg
+      class="collapsible-chevron"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </summary>
+  <div class="collapsible-body mt-4">
+    <slot />
+  </div>
+</details>
