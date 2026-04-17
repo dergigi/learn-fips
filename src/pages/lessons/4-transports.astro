@@ -77,10 +77,6 @@ import { getQuiz } from "../../data/quizzes";
         </div>
         <div class="flex items-start gap-2">
           <span class="text-fips-green mt-0.5">✓</span>
-          <span>NAT traversal: UDP hole punching works through most NAT devices</span>
-        </div>
-        <div class="flex items-start gap-2">
-          <span class="text-fips-green mt-0.5">✓</span>
           <span>Low overhead: 8-byte UDP header, no connection state</span>
         </div>
         <div class="flex items-start gap-2">
@@ -88,6 +84,13 @@ import { getQuiz } from "../../data/quizzes";
           <span>Natural fit: FIPS is datagram-oriented, and UDP preserves packet boundaries</span>
         </div>
       </div>
+
+      <p class="text-sm text-fips-muted mt-4">
+        A note on NAT: FIPS v1 does not try to traverse NAT. A node behind NAT has to be reachable
+        through port forwarding, a publicly addressed peer, or a relay through other mesh nodes. UDP
+        hole punching and relay-assisted traversal are on the roadmap but are not part of the
+        current design.
+      </p>
     </section>
 
     <Quiz client:visible questions={getQuiz("4-transports")} title="Transports Quiz" />
