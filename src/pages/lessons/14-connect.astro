@@ -38,8 +38,15 @@ const SOVENG_PODCAST_URL =
       <div class="grid sm:grid-cols-2 gap-3 not-prose my-2">
         {
           contributors.map((c) => {
-            const onNostr = Boolean(c.npub);
-            const href = onNostr ? `https://njump.to/${c.npub}` : `https://github.com/${c.github}`;
+            const href = c.npub
+              ? `https://njump.to/${c.npub}`
+              : c.github
+                ? `https://github.com/${c.github}`
+                : null;
+            if (!href) return null;
+            const subtitle = c.npub
+              ? `${c.npub.slice(0, 16)}…${c.npub.slice(-6)}`
+              : `github.com/${c.github}`;
             return (
               <a
                 href={href}
@@ -51,9 +58,7 @@ const SOVENG_PODCAST_URL =
                   <span class="font-semibold text-fips-accent">{c.name}</span>
                   {c.role && <span class="text-xs font-mono text-fips-muted">{c.role}</span>}
                 </div>
-                <div class="text-xs text-fips-muted mt-1 font-mono truncate">
-                  {onNostr ? c.npub : `github.com/${c.github}`}
-                </div>
+                <div class="text-xs text-fips-muted mt-1 font-mono truncate">{subtitle}</div>
               </a>
             );
           })
