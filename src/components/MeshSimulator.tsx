@@ -12,12 +12,99 @@ import type { MeshNode, Link } from "../lib/types";
 const WIDTH = 700;
 const HEIGHT = 420;
 const NODE_RADIUS = 18;
+const TIDY_PADDING = 44;
 
 function shortAddr(addr: Uint8Array): string {
   return hexEncode(addr).slice(0, 6);
 }
 
 const NUDGE_STEP = 20;
+
+/**
+ * Place every node on a level curve keyed by its depth in the spanning
+ * tree, with siblings spread horizontally in proportion to the width of
+ * their own subtrees. This is a stripped-down Reingold-Tilford: it is
+ * stable, handles any branching factor, and never overlaps siblings.
+ * Nodes disconnected from the root land on a reserve row at the bottom.
+ */
+function tidyTreeLayout(nodes: Map<string, MeshNode>, rootId: string): Map<string, MeshNode> {
+  const children = new Map<string, string[]>();
+  for (const n of nodes.values()) {
+    if (n.parent && n.parent !== n.id) {
+      const arr = children.get(n.parent) ?? [];
+      arr.push(n.id);
+      children.set(n.parent, arr);
+    }
+  }
+  for (const arr of children.values()) arr.sort();
+
+  const subtreeWidth = new Map<string, number>();
+  const depth = new Map<string, number>();
+  const visiting = new Set<string>();
+
+  function computeShape(id: string, d: number): number {
+    if (visiting.has(id)) return 1;
+    visiting.add(id);
+    depth.set(id, d);
+    const kids = children.get(id) ?? [];
+    let w = 0;
+    for (const k of kids) w += computeShape(k, d + 1);
+    const width = Math.max(1, w);
+    subtreeWidth.set(id, width);
+    return width;
+  }
+  computeShape(rootId, 0);
+
+  const positions = new Map<string, { x: number; y: number }>();
+  const maxDepth = Math.max(0, ...Array.from(depth.values()));
+  const innerH = HEIGHT - 2 * TIDY_PADDING;
+  const yStep = maxDepth > 0 ? innerH / maxDepth : 0;
+
+  function place(id: string, xStart: number, xEnd: number) {
+    const d = depth.get(id) ?? 0;
+    const y = TIDY_PADDING + d * yStep;
+    const kids = children.get(id) ?? [];
+    const totalKidWidth = kids.reduce((s, k) => s + (subtreeWidth.get(k) ?? 1), 0);
+    let cursor = xStart;
+    for (const k of kids) {
+      const w = subtreeWidth.get(k) ?? 1;
+      const portion = totalKidWidth > 0 ? (xEnd - xStart) * (w / totalKidWidth) : 0;
+      place(k, cursor, cursor + portion);
+      cursor += portion;
+    }
+    if (kids.length > 0) {
+      const first = positions.get(kids[0]!)!;
+      const last = positions.get(kids[kids.length - 1]!)!;
+      positions.set(id, { x: (first.x + last.x) / 2, y });
+    } else {
+      positions.set(id, { x: (xStart + xEnd) / 2, y });
+    }
+  }
+  place(rootId, TIDY_PADDING, WIDTH - TIDY_PADDING);
+
+  const unassigned = Array.from(nodes.keys()).filter((id) => !positions.has(id));
+  if (unassigned.length > 0) {
+    const y = HEIGHT - TIDY_PADDING / 2;
+    const span = WIDTH - 2 * TIDY_PADDING;
+    unassigned.forEach((id, i) => {
+      const x = TIDY_PADDING + ((i + 0.5) * span) / unassigned.length;
+      positions.set(id, { x, y });
+    });
+  }
+
+  const out = new Map<string, MeshNode>();
+  for (const [id, n] of nodes.entries()) {
+    const p = positions.get(id);
+    if (!p) {
+      out.set(id, { ...n, peers: new Set(n.peers) });
+      continue;
+    }
+    const clampedX = Math.max(NODE_RADIUS, Math.min(WIDTH - NODE_RADIUS, p.x));
+    const clampedY = Math.max(NODE_RADIUS, Math.min(HEIGHT - NODE_RADIUS, p.y));
+    out.set(id, { ...n, x: clampedX, y: clampedY, peers: new Set(n.peers) });
+  }
+  return out;
+}
 
 function computeRoute(from: string, to: string, nodes: Map<string, MeshNode>): string[] {
   const path: string[] = [from];
@@ -244,6 +331,13 @@ export default function MeshSimulator() {
     setRoutePath([]);
   }
 
+  function tidyLayout() {
+    if (!rootId) return;
+    const laid = tidyTreeLayout(nodes, rootId);
+    setNodes(rebuild(laid, links));
+    setStatusMsg("Mesh arranged as a tree rooted at " + rootId + ".");
+  }
+
   function reset() {
     const n = createDemoNodes(10, WIDTH, HEIGHT);
     const l = createDemoLinks(n);
@@ -322,6 +416,14 @@ export default function MeshSimulator() {
             className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
           >
             {showCoords ? "Hide" : "Show"} Coords
+          </button>
+          <button
+            type="button"
+            onClick={tidyLayout}
+            className="px-2 py-1 rounded border border-fips-border hover:border-fips-accent/40 transition-colors"
+            title="Arrange nodes as a top-down tree rooted at the lowest node_addr"
+          >
+            Tidy
           </button>
           <button
             type="button"
