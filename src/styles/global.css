@@ -13,9 +13,7 @@
   --color-fips-red: #f87171;
   --color-fips-blue: #60a5fa;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
-  --font-serif:
-    "Iowan Old Style", "Palatino Linotype", "URW Palladio L", "Book Antiqua", Palatino, Georgia,
-    serif;
+  --font-serif: ui-serif, "New York", "Charter", "Cambria", Georgia, serif;
 }
 
 html {
@@ -68,9 +66,8 @@ pre,
  */
 .pull-quote {
   font-family: var(--font-serif);
-  font-style: italic;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
@@ -84,6 +81,7 @@ pre,
 
 .pull-quote-mark {
   font-family: var(--font-serif);
+  line-height: 1;
 }
 
 /* Hex pattern background for hero sections */
