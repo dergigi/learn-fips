@@ -94,6 +94,26 @@ article li a {
 }
 
 /*
+ * Low-emphasis link that inherits its surrounding text color and only
+ * lights up in the accent on hover. Use inside muted prose where a
+ * bright accent link would otherwise dominate the paragraph.
+ */
+.subtle-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.subtle-link:hover,
+.subtle-link:focus-visible {
+  color: var(--color-fips-accent);
+  border-bottom-color: var(--color-fips-accent);
+}
+
+/*
  * Auto-decorated acronyms (see src/lib/acronyms.ts). A dotted underline
  * hints that the term explains itself on hover; on touch devices the
  * link still works as a plain jump to the glossary entry.
