@@ -1,11 +1,16 @@
 ---
 import Base from "../layouts/Base.astro";
 import { lessons } from "../data/lessons";
+import HeroMesh from "../components/HeroMesh";
 ---
 
 <Base title="Learn FIPS">
-  <section class="hex-bg">
-    <div class="max-w-3xl mx-auto px-4 pt-24 pb-16 text-center">
+  <section class="hex-bg relative overflow-hidden">
+    <div class="hero-mesh-wrap absolute inset-0">
+      <HeroMesh client:load />
+      <div class="hero-mesh-fade absolute inset-0 pointer-events-none"></div>
+    </div>
+    <div class="relative max-w-3xl mx-auto px-4 pt-24 pb-16 text-center">
       <p class="text-fips-accent font-mono text-sm tracking-widest uppercase mb-4">
         Interactive Protocol Guide
       </p>
