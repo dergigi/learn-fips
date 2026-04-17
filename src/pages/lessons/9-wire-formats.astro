@@ -1,0 +1,204 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import PacketInspector from "../../components/PacketInspector";
+import { getQuiz } from "../../data/quizzes";
+import {
+  FIPS_BASE_OVERHEAD,
+  FIPS_IPV6_HEADER_SAVINGS,
+  FIPS_IPV6_OVERHEAD,
+  FIPS_IPV6_PORT_HEADER,
+} from "../../lib/constants";
+---
+
+<Base title="Reading the Wire">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 9</p>
+    <h1 class="text-3xl font-bold mb-8">Reading the Wire</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        Every preceding lesson worked at the level of boxes and arrows: a packet enters a router,
+        the router decrypts the link layer, reads the routing envelope, and forwards. This lesson
+        zooms in on the bytes that make those boxes real. The goal is to make you comfortable
+        walking through a capture or staring at a hex dump and recognizing what each byte is for.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Ground rules</h2>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>Multi-byte integers are little-endian.</li>
+        <li>
+          A <code class="mono">NodeAddr</code> is 16 bytes (truncated SHA-256 of the x-only public key).
+        </li>
+        <li>Signatures are 64 bytes (secp256k1 Schnorr).</li>
+        <li>
+          Variable-length arrays use a 2-byte little-endian count prefix, then that many fixed-size
+          items.
+        </li>
+        <li>
+          Public keys on the wire are 33 bytes (compressed secp256k1, the
+          <code class="mono">0x02</code>/<code class="mono">0x03</code> prefix plus 32 bytes of X).
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The 4-byte common prefix</h2>
+
+      <p>
+        Every FMP and FSP packet starts with the same 4-byte common prefix. It is the only piece of
+        either protocol that a transit transport can depend on without knowing anything else about
+        the link session.
+      </p>
+
+      <div class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm">
+        <div class="text-fips-muted text-xs mb-2">bytes 0..3, LE</div>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2 py-1 rounded bg-fips-accent/10 text-fips-accent">ver (4 bits)</span>
+          <span class="px-2 py-1 rounded bg-fips-accent/10 text-fips-accent">phase (4 bits)</span>
+          <span class="px-2 py-1 rounded bg-fips-accent/20 text-fips-accent">flags (1B)</span>
+          <span class="px-2 py-1 rounded bg-fips-accent/30 text-fips-accent">payload_len (2B)</span>
+        </div>
+      </div>
+
+      <p>
+        Phase is how a receiver tells handshake packets apart from established traffic:
+        <code class="mono">0x0</code> is post-handshake,
+        <code class="mono">0x1</code> and <code class="mono">0x2</code> are Noise IK msg1 and msg2 at
+        the link layer,
+        <code class="mono">0x1</code>, <code class="mono">0x2</code>, and
+        <code class="mono">0x3</code> are SessionSetup / SessionAck / SessionMsg3 at the session layer
+        (FSP adds a third handshake message for XK).
+      </p>
+
+      <p>
+        Flags are per-packet signals. The interesting ones at the link layer are
+        <code class="mono">K</code> (key epoch during rekey), <code class="mono">CE</code>
+        (ECN echo), and <code class="mono">SP</code> (spin bit for RTT). At the FSP layer the <code
+          class="mono">CP</code
+        > bit signals that cleartext coordinates follow the header, and <code class="mono">U</code> marks
+        the packet as unencrypted (used by the three error signals).
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Link frame, encrypted</h2>
+
+      <p>
+        The 16-byte FMP outer header is the AEAD associated data: common prefix,
+        <code class="mono">receiver_idx</code> (so the receiver can find the session in O(1)), and an
+        8-byte counter that doubles as the AEAD nonce and the replay-window sequence number. ChaCha20-Poly1305
+        covers everything after. The 16-byte Poly1305 tag sits at the end of the frame.
+      </p>
+
+      <p>
+        Inside the AEAD plaintext, the first five bytes are a link-layer inner header: a 4-byte
+        session-relative timestamp and the 1-byte
+        <code class="mono">msg_type</code>. Everything after that is whatever the message type says
+        it is: TreeAnnounce, FilterAnnounce, SessionDatagram, LookupRequest, and so on.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">SessionDatagram, the routing envelope</h2>
+
+      <p>
+        Multi-hop traffic rides inside a SessionDatagram, which is what transit routers actually
+        look at. Its fixed fields are
+        <code class="mono">ttl</code> (1B), <code class="mono">path_mtu</code> (2B LE, min'd at every
+        hop), <code class="mono">src_addr</code> and
+        <code class="mono">dest_addr</code> (16B each). After the header comes an opaque FSP message that
+        the router will not, and cannot, decrypt.
+      </p>
+
+      <p>
+        FSP brings its own cleartext 12-byte header: the same common prefix plus an 8-byte AEAD
+        counter, matching the link layer's structure. When
+        <code class="mono">CP</code> is set, the next bytes are two variable-length coordinate arrays
+        before the ciphertext. Transit routers parse them and update their caches without touching the
+        ciphertext.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Where the overhead goes</h2>
+
+      <p>
+        Every IPv6 packet carried by FIPS has
+        <code class="mono">{FIPS_IPV6_OVERHEAD}</code> bytes of protocol overhead at the link layer:
+        <code class="mono">{FIPS_BASE_OVERHEAD}</code> bytes of base FSP + FMP + SessionDatagram,
+        <code class="mono">{FIPS_IPV6_PORT_HEADER}</code> bytes for the
+        <code class="mono">src_port</code> / <code class="mono">dst_port</code>, minus <code
+          class="mono">{FIPS_IPV6_HEADER_SAVINGS}</code
+        > bytes saved by the IPv6 shim compressing the 40-byte IPv6 header down to 7 bytes of residual
+        fields.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Walk it yourself</h2>
+
+      <p>
+        Pick a message type below. Each block is a field, sized roughly by its byte count. Click a
+        block to see what it means, and adjust the toggles to watch the totals change.
+      </p>
+
+      <PacketInspector client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Message-type table, at a glance</h2>
+
+      <div class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 text-sm">
+        <p class="text-fips-muted mb-2">Link-layer (FMP) message types</p>
+        <table class="w-full text-xs font-mono">
+          <tbody class="divide-y divide-fips-border">
+            <tr><td class="py-1 text-fips-accent">0x00</td><td>SessionDatagram</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x01</td><td>SenderReport</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x02</td><td>ReceiverReport</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x10</td><td>TreeAnnounce</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x20</td><td>FilterAnnounce</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x30</td><td>LookupRequest</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x31</td><td>LookupResponse</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x50</td><td>Disconnect</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x51</td><td>Heartbeat</td></tr>
+          </tbody>
+        </table>
+
+        <p class="text-fips-muted mt-4 mb-2">Session-layer (FSP) message types</p>
+        <table class="w-full text-xs font-mono">
+          <tbody class="divide-y divide-fips-border">
+            <tr><td class="py-1 text-fips-accent">0x10</td><td>Data (port-multiplexed)</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x11</td><td>SenderReport</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x12</td><td>ReceiverReport</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x13</td><td>PathMtuNotification</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x14</td><td>CoordsWarmup</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x20</td><td>CoordsRequired (plaintext)</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x21</td><td>PathBroken (plaintext)</td></tr>
+            <tr><td class="py-1 text-fips-accent">0x22</td><td>MtuExceeded (plaintext)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">A couple of details worth remembering</h2>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          TreeAnnounce carries a Schnorr signature over the whole message. Any peer can verify it
+          before replaying the state, so tree updates do not depend on trusting the relay.
+        </li>
+        <li>
+          LookupResponse signs <code class="mono">(request_id || target || target_coords)</code>.
+          The <code class="mono">path_mtu</code> field is excluded from the signature because every transit
+          hop rewrites it.
+        </li>
+        <li>
+          Error signals (CoordsRequired, PathBroken, MtuExceeded) set the
+          <code class="mono">U</code> flag in the FSP common prefix and carry a plaintext body. No session
+          keys are needed to read them.
+        </li>
+        <li>
+          The Ethernet transport adds a 3-byte header (frame type + 2-byte length) on data frames so
+          the receiver can trim Ethernet minimum-frame padding that would otherwise corrupt AEAD
+          verification.
+        </li>
+      </ul>
+    </section>
+
+    <Quiz client:visible questions={getQuiz("9-wire-formats")} title="Lesson quiz" />
+
+    <SeeAlso terms={["fmp", "fsp", "node_addr", "cp-flag", "coordinate-cache", "error-signals"]} />
+    <LessonNav current={9} />
+  </article>
+</Base>

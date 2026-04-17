@@ -58,4 +58,11 @@ export const lessons: Lesson[] = [
     description:
       "Coordinate warmup, the three error signals, and how the mesh heals around broken paths.",
   },
+  {
+    slug: "9-wire-formats",
+    number: 9,
+    title: "Reading the Wire",
+    description:
+      "The byte-level layout of a FIPS packet, layer by layer. Toggle fields and watch the overhead change.",
+  },
 ];

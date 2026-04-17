@@ -339,4 +339,78 @@ export const quizzes: Record<string, QuizQuestion[]> = {
         "MtuExceeded is purely about sizing. No discovery, no warmup reset, no key change: FSP lowers path_mtu and fits subsequent packets under it.",
     },
   ],
+  "9-wire-formats": [
+    {
+      question: "How many bytes is the FMP common prefix, and what does it contain?",
+      options: [
+        "2 bytes: just the phase and payload length.",
+        "4 bytes: version (4 bits), phase (4 bits), flags (1B), payload_len (2B LE).",
+        "6 bytes: version, phase, flags, payload_len, and counter.",
+        "It varies with the message type.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Version + phase share the first byte (4 bits each). The next byte is flags. The last two bytes are the little-endian payload length.",
+    },
+    {
+      question: "What is the purpose of the receiver_idx field in an established FMP frame?",
+      options: [
+        "A random nonce for each packet.",
+        "A 4-byte LE session index so the receiver looks up its session state in O(1).",
+        "The TTL for the packet.",
+        "The encryption algorithm identifier.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Each peer picks its own index and tells the other side to include it as receiver_idx in packets sent in that direction. One array lookup lands on the right session.",
+    },
+    {
+      question: "Which field is excluded from the LookupResponse's Schnorr signature, and why?",
+      options: [
+        "request_id, because it is random.",
+        "target_coords, because they are cached at the source already.",
+        "path_mtu, because every transit hop rewrites it.",
+        "target, because it is derived from the request.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "path_mtu is a transit annotation: each hop does min(path_mtu, link_mtu). Covering it with the signature would invalidate the proof at every hop.",
+    },
+    {
+      question:
+        "A transit router sees a SessionDatagram go by. What can it read, and what is it blind to?",
+      options: [
+        "It can read everything including the session payload.",
+        "It can read nothing; all bytes are encrypted end-to-end.",
+        "It can read the routing envelope (ttl, path_mtu, src_addr, dest_addr) and the FSP common prefix, but the FSP AEAD payload is opaque.",
+        "It can read only the destination address.",
+      ],
+      correctIndex: 2,
+      explanation:
+        "After decrypting the link layer, the transit router sees the 36-byte SessionDatagram header and the 12-byte FSP cleartext header. The session AEAD ciphertext stays sealed.",
+    },
+    {
+      question: `IPv6 traffic through FIPS has ${FIPS_IPV6_OVERHEAD} bytes of net overhead. Where does the number come from?`,
+      options: [
+        `${FIPS_BASE_OVERHEAD} bytes of protocol envelope, with no adjustments for IPv6.`,
+        `${FIPS_BASE_OVERHEAD} base − ${FIPS_IPV6_HEADER_SAVINGS} saved by IPv6 header compression + ${FIPS_IPV6_PORT_HEADER} port header = ${FIPS_IPV6_OVERHEAD} bytes.`,
+        `${FIPS_IPV6_HEADER_SAVINGS} bytes, because IPv6 compression strips the rest.`,
+        `${FIPS_IPV6_OVERHEAD} − ${FIPS_IPV6_PORT_HEADER} = ${FIPS_IPV6_OVERHEAD - FIPS_IPV6_PORT_HEADER} bytes.`,
+      ],
+      correctIndex: 1,
+      explanation: `The IPv6 shim turns the 40-byte IPv6 header into 7 bytes of residual fields, saving ${FIPS_IPV6_HEADER_SAVINGS} bytes. The ${FIPS_IPV6_PORT_HEADER}-byte port header pushes it back up, netting ${FIPS_IPV6_OVERHEAD}B above a bare IPv6 packet.`,
+    },
+    {
+      question: "How does a receiver know whether an FSP packet carries cleartext coordinates?",
+      options: [
+        "The payload_len field is larger than usual.",
+        "The CP bit is set in the FSP common prefix flags.",
+        "The ttl field in the SessionDatagram is zero.",
+        "Coordinates always follow the header.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "CP (Coordinates Piggyback) is a flag in the FSP common prefix. When it is clear, the ciphertext starts right after the 12-byte header.",
+    },
+  ],
 };
