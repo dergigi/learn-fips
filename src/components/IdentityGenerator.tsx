@@ -126,8 +126,10 @@ export default function IdentityGenerator() {
                   className="rounded border border-fips-border p-3"
                 >
                   {i > 0 && (
-                    <div className="flex justify-center -mt-6 mb-1">
-                      <span className="text-fips-accent text-xs">↓ derived from above</span>
+                    <div className="flex justify-center -mt-[1.1rem] mb-2">
+                      <span className="text-fips-accent text-xs bg-fips-surface rounded-sm px-2 leading-none py-0.5">
+                        ↓ derived from above
+                      </span>
                     </div>
                   )}
                   <div className="flex items-start justify-between gap-2 mb-1">
