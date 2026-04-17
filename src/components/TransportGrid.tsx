@@ -85,7 +85,7 @@ const categories: Category[] = [
         reliable: true,
         connectionOriented: true,
         notes: "L2CAP CoC with per-link MTU negotiation.",
-        status: "future",
+        status: "implemented",
       },
       {
         name: "Radio",
