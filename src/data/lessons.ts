@@ -51,4 +51,11 @@ export const lessons: Lesson[] = [
     title: "Putting It Together",
     description: "From cold start to steady state. The full lifecycle of a FIPS connection.",
   },
+  {
+    slug: "8-recovery",
+    number: 8,
+    title: "When Things Go Wrong",
+    description:
+      "Coordinate warmup, the three error signals, and how the mesh heals around broken paths.",
+  },
 ];

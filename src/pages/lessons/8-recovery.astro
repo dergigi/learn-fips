@@ -1,0 +1,211 @@
+---
+import Base from "../../layouts/Base.astro";
+import LessonNav from "../../components/LessonNav.astro";
+import SeeAlso from "../../components/SeeAlso.astro";
+import Quiz from "../../components/Quiz";
+import RecoveryFlow from "../../components/RecoveryFlow";
+import { getQuiz } from "../../data/quizzes";
+import {
+  FIPS_COORDS_WARMUP_PACKETS,
+  FIPS_COORDS_RESPONSE_INTERVAL_MS,
+  FIPS_ERROR_RATE_LIMIT_MS,
+  FIPS_SESSION_IDLE_TIMEOUT_S,
+} from "../../lib/constants";
+---
+
+<Base title="When Things Go Wrong">
+  <article class="max-w-3xl mx-auto px-4 py-12">
+    <p class="text-fips-accent font-mono text-sm mb-2">Lesson 8</p>
+    <h1 class="text-3xl font-bold mb-8">When Things Go Wrong</h1>
+
+    <section class="space-y-4 text-fips-text leading-relaxed">
+      <p>
+        The previous lessons assumed caches were warm, coordinates were current, and links had
+        enough room for every packet. Real meshes do not behave like that. Nodes join and leave, the
+        tree reconverges, caches expire, link MTUs drop when a transport switches from Ethernet to
+        UDP-over-DSL. FIPS has to keep a session usable through all of it without tearing down the
+        crypto state or falling back to manual routing.
+      </p>
+
+      <p>
+        This lesson covers the two mechanisms that keep the mesh self-healing: the coordinate warmup
+        window at the start of every session, and the three error signals transit routers emit when
+        they cannot forward a packet.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Why warmup exists</h2>
+
+      <p>
+        Multi-hop routing needs two things at every transit node: a reachability hint (bloom filter)
+        and tree coordinates for the destination (coordinate cache). Without the coordinate cache, <code
+          class="mono text-fips-accent">find_next_hop()</code
+        > returns
+        <code class="mono">None</code> before bloom filters are even consulted. Discovering coordinates
+        on every cache miss would be slow and chatty, so FIPS warms the caches along the path during session
+        setup.
+      </p>
+
+      <p>The warmup has three complementary sources:</p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">SessionSetup</span> carries cleartext coordinates in the routing
+          envelope. Every transit node extracts source and destination coordinates as the handshake passes
+          through, and caches both.
+        </li>
+        <li>
+          <span class="text-fips-text">CP-flagged data packets</span>. The first
+          <code class="mono">{FIPS_COORDS_WARMUP_PACKETS}</code> data packets of a session set the
+          <code class="mono">CP</code> flag in the FSP header and carry the same cleartext coordinates
+          between the header and the ciphertext. Transit routers parse them without decrypting anything
+          and refresh their caches.
+        </li>
+        <li>
+          <span class="text-fips-text">Standalone CoordsWarmup (0x14)</span>. If piggy-backing
+          coordinates onto a data packet would exceed the transport MTU, FSP emits a bare
+          CoordsWarmup first: same CP format, empty inner body, exists only to deliver coordinates
+          to transit nodes.
+        </li>
+      </ul>
+
+      <p>
+        Once the <code class="mono">{FIPS_COORDS_WARMUP_PACKETS}</code>-packet window is over, FSP
+        clears the CP flag and sends minimal 12-byte headers. At that point every router on the path
+        should have current coordinates for both endpoints.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The three error signals</h2>
+
+      <p>
+        After warmup finishes, a transit router can still fail to forward a packet. Instead of
+        dropping silently (the classic IP behavior), FIPS defines three explicit error signals. Each
+        one travels back to the source as a new SessionDatagram, routed via
+        <code class="mono">find_next_hop(src_addr)</code>. The cryptographic session keeps running;
+        only routing state is repaired.
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-3 not-prose my-4">
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">CoordsRequired (0x15)</p>
+          <p class="text-xs text-fips-muted">
+            No cached coordinates for the destination. Transit node has nothing to forward with.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">PathBroken (0x16)</p>
+          <p class="text-xs text-fips-muted">
+            Coordinates are cached, but no neighbor is closer to the destination than the transit
+            node itself. Greedy routing hit a local minimum.
+          </p>
+        </div>
+        <div class="rounded-lg border border-fips-border p-3 bg-fips-surface/30">
+          <p class="font-mono text-fips-accent text-sm mb-1">MtuExceeded (0x17)</p>
+          <p class="text-xs text-fips-muted">
+            Packet does not fit the next-hop link MTU. The mesh layer will not fragment, so the
+            source has to shrink its payloads.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Watch a recovery unfold</h2>
+
+      <p>
+        Pick a scenario below. Each one starts from the same five-node path (<code class="mono"
+          >Src → R1 → R2 → R3 → Dst</code
+        >) in steady state. A problem at R2 triggers the error, the signal walks back to Src, and
+        Src drives the repair.
+      </p>
+
+      <RecoveryFlow client:visible />
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Rate limits and why they matter</h2>
+
+      <p>Two rate limits keep recovery from becoming a storm when the topology changes:</p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          <span class="text-fips-text">Transit side:</span> at most one error signal per destination per
+          <code class="mono">{FIPS_ERROR_RATE_LIMIT_MS}</code> ms. If a transit router sees a hundred
+          packets to the same unreachable destination in a burst, it emits one error signal, not a hundred.
+        </li>
+        <li>
+          <span class="text-fips-text">Source side:</span> at most one standalone
+          <code class="mono">CoordsWarmup</code> per destination per
+          <code class="mono">{FIPS_COORDS_RESPONSE_INTERVAL_MS}</code> ms in response to errors. This
+          prevents a burst of errors from triggering a burst of warmup messages.
+        </li>
+      </ul>
+
+      <p>
+        Error signals are processed asynchronously, outside the packet-receive loop. A session
+        getting hammered by PathBroken responses does not stall normal forwarding.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">The blind spot</h2>
+
+      <p>
+        Error signals rely on <code class="mono">find_next_hop(src_addr)</code> at the transit node. After
+        the warmup window, a transit node may no longer have the source's coordinates cached. In that
+        case the error is silently dropped. Two things limit the damage:
+      </p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>
+          CP-flagged warmup packets seed transit caches with the <em>source</em>'s coordinates too,
+          so the first few seconds of a session are always covered.
+        </li>
+        <li>
+          Sessions tear down after <code class="mono">{FIPS_SESSION_IDLE_TIMEOUT_S}</code>s of no
+          application data. A session old enough to have lost all transit caches will expire soon
+          anyway, and the next attempt re-runs SessionSetup from scratch.
+        </li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">State kept alive through all of this</h2>
+
+      <p>Recovery never rebuilds the crypto session. What gets refreshed is:</p>
+
+      <ul class="list-disc pl-6 space-y-2 text-fips-muted text-sm">
+        <li>The source's local coordinate cache (on PathBroken).</li>
+        <li>
+          The transit caches along the current path (via CP-flagged packets and CoordsWarmup).
+        </li>
+        <li>The source's path-MTU estimate (on MtuExceeded).</li>
+      </ul>
+
+      <p>
+        The Noise XK session, the replay counter, the sender and receiver MMP state: all of it
+        persists. From the application's view the session keeps running. A few packets may be lost
+        during the repair, which looks the same to TCP as any other drop.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4">Putting the signals together</h2>
+
+      <div
+        class="rounded-lg border border-fips-border bg-fips-surface/30 p-4 font-mono text-sm space-y-1"
+      >
+        <div class="text-fips-muted">First packet to a new destination</div>
+        <div class="pl-4 text-fips-accent">→ SessionSetup carries coords, transit caches warm</div>
+        <div class="pl-4 text-fips-accent">
+          → First {FIPS_COORDS_WARMUP_PACKETS} data packets set CP, reinforcing caches
+        </div>
+        <div class="text-fips-muted mt-2">Cache evicted at a transit node</div>
+        <div class="pl-4 text-red-400">← CoordsRequired back to source</div>
+        <div class="pl-4 text-fips-accent">→ Standalone CoordsWarmup, CP counter resets</div>
+        <div class="text-fips-muted mt-2">Tree moved, cached coords stale</div>
+        <div class="pl-4 text-red-400">← PathBroken back to source</div>
+        <div class="pl-4 text-fips-accent">
+          → Drop local entry, LookupRequest, CP counter resets
+        </div>
+        <div class="text-fips-muted mt-2">Packet too big for next-hop MTU</div>
+        <div class="pl-4 text-red-400">← MtuExceeded back to source</div>
+        <div class="pl-4 text-fips-accent">→ Clamp session path_mtu, resend smaller</div>
+      </div>
+    </section>
+
+    <Quiz client:visible questions={getQuiz("8-recovery")} title="Lesson quiz" />
+
+    <SeeAlso terms={["coordinate", "spanning-tree", "fsp", "fmp", "bloom-filter", "mtu"]} />
+    <LessonNav current={8} />
+  </article>
+</Base>

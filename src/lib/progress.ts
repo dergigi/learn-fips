@@ -43,6 +43,7 @@ export const LESSONS_WITH_QUIZ = new Set<string>([
   "5-spanning-tree",
   "6-encryption",
   "7-putting-it-together",
+  "8-recovery",
 ]);
 
 function empty(): Progress {

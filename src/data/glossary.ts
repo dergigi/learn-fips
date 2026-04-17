@@ -142,9 +142,48 @@ export const glossary: GlossaryTerm[] = [
     term: "Transport",
     summary: "Any medium that can move datagrams: WiFi, Ethernet, UDP overlay, Tor, serial link.",
     detail:
-      "FIPS treats transports as pluggable drivers. A node can run multiple transports at once, bridging peers on different media into the same mesh. The protocol above is unchanged — only the framing and peer discovery differ per transport.",
+      "FIPS treats transports as pluggable drivers. A node can run multiple transports at once, bridging peers on different media into the same mesh. The protocol above is unchanged: only the framing and peer discovery differ per transport.",
     lessons: [4, 7],
     tags: ["architecture"],
+  },
+  {
+    id: "coordinate-cache",
+    term: "Coordinate cache",
+    summary: "Per-node lookup table mapping node_addr to current tree coordinates.",
+    detail:
+      "Every node keeps a bounded cache of coordinates for destinations it has forwarded toward. Entries are seeded by SessionSetup, refreshed by CP-flagged data packets and CoordsWarmup messages, and expire by TTL. Without a cache entry for the destination, find_next_hop() returns None before bloom filters are even consulted.",
+    lessons: [5, 7, 8],
+    tags: ["routing"],
+  },
+  {
+    id: "cp-flag",
+    term: "CP flag",
+    expansion: "Coordinates Piggyback",
+    summary:
+      "An FSP header bit telling transit nodes the packet carries cleartext src and dst coordinates for caching.",
+    detail:
+      "The first five data packets of a session, plus any packet sent after CoordsRequired or PathBroken, set the CP flag and include coordinates between the FSP header and the AEAD ciphertext. Transit nodes parse them without decrypting the payload. The same format is used by the standalone CoordsWarmup (0x14) message.",
+    lessons: [8],
+    tags: ["routing", "session"],
+  },
+  {
+    id: "error-signals",
+    term: "Error signals",
+    summary:
+      "CoordsRequired, PathBroken, and MtuExceeded: explicit feedback from transit nodes to the source.",
+    detail:
+      "When a transit node cannot forward a SessionDatagram, it builds a new SessionDatagram back to the source with one of three payloads: CoordsRequired (0x15) if it has no cached coordinates for the destination, PathBroken (0x16) if its cached coordinates put it at a local minimum, MtuExceeded (0x17) if the packet is too large for the next-hop link. Rate-limited to one per destination per 100ms at the transit node.",
+    lessons: [8],
+    tags: ["routing", "recovery"],
+  },
+  {
+    id: "mtu",
+    term: "Path MTU",
+    summary: "Largest SessionDatagram size the current path can carry without fragmentation.",
+    detail:
+      "SessionDatagram and LookupResponse both carry a path_mtu field that tracks the minimum link MTU seen along the forward path. The mesh layer never fragments. If a packet still exceeds the next-hop MTU at some transit node, that node emits MtuExceeded and FSP clamps its estimate accordingly.",
+    lessons: [8],
+    tags: ["routing"],
   },
 ];
 

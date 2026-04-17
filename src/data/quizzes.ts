@@ -1,6 +1,9 @@
 import type { QuizQuestion } from "../lib/types";
 import {
   FIPS_BASE_OVERHEAD,
+  FIPS_COORDS_RESPONSE_INTERVAL_MS,
+  FIPS_COORDS_WARMUP_PACKETS,
+  FIPS_ERROR_RATE_LIMIT_MS,
   FIPS_IPV6_HEADER_SAVINGS,
   FIPS_IPV6_OVERHEAD,
   FIPS_IPV6_PORT_HEADER,
@@ -265,6 +268,75 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       ],
       correctIndex: 1,
       explanation: `${FIPS_BASE_OVERHEAD} bytes base protocol overhead, minus ${FIPS_IPV6_HEADER_SAVINGS} bytes saved by IPv6 header compression, plus ${FIPS_IPV6_PORT_HEADER} bytes port header = ${FIPS_IPV6_OVERHEAD} bytes (FIPS_IPV6_OVERHEAD).`,
+    },
+  ],
+  "8-recovery": [
+    {
+      question: "What does the CP flag on an FSP data packet tell a transit router?",
+      options: [
+        "The packet should be dropped after forwarding.",
+        "The packet contains cleartext source and destination coordinates it can cache.",
+        "The packet is encrypted and opaque to transit routers.",
+        "The packet requires an acknowledgement from the destination.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "CP (Coordinates Piggyback) means the FSP header is followed by cleartext src and dst coordinates before the AEAD ciphertext. Transit routers extract them into the coordinate cache without decrypting anything.",
+    },
+    {
+      question: `How many data packets at the start of a session carry the CP flag by default?`,
+      options: ["1", `${FIPS_COORDS_WARMUP_PACKETS}`, "10", "Every packet, always"],
+      correctIndex: 1,
+      explanation: `The default is ${FIPS_COORDS_WARMUP_PACKETS} packets (node.session.coords_warmup_packets). After that, FSP clears the CP flag until a CoordsRequired or PathBroken signal resets the counter.`,
+    },
+    {
+      question:
+        "Which error signal means 'I have coordinates for the destination, but no peer is closer to it than I am'?",
+      options: [
+        "CoordsRequired (0x15)",
+        "PathBroken (0x16)",
+        "MtuExceeded (0x17)",
+        "SessionReject",
+      ],
+      correctIndex: 1,
+      explanation:
+        "PathBroken is the greedy-routing dead end. The cached coordinates exist but are likely stale: the tree moved.",
+    },
+    {
+      question:
+        "On receiving PathBroken, what does the source do differently from when it receives CoordsRequired?",
+      options: [
+        "It tears down and re-establishes the Noise XK session.",
+        "It always initiates a fresh LookupRequest and removes its own cached coordinates for the destination.",
+        "It stops sending to that destination for 90 seconds.",
+        "It ignores the signal because PathBroken is informational.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "PathBroken is always followed by discovery and a local cache eviction. CoordsRequired resets warmup and sends CoordsWarmup, but discovery is optional.",
+    },
+    {
+      question: "Why does FIPS rate-limit error signals at the transit node?",
+      options: [
+        "Because error signals are expensive to encrypt.",
+        `To prevent storms: many packets to the same broken destination would otherwise generate one error per packet. The cap is one per destination per ${FIPS_ERROR_RATE_LIMIT_MS}ms.`,
+        "To allow destinations to reject too many errors.",
+        "Because routers have no way to address the source.",
+      ],
+      correctIndex: 1,
+      explanation: `Transit routers emit at most one error signal per destination per ${FIPS_ERROR_RATE_LIMIT_MS}ms. The source independently rate-limits its CoordsWarmup responses to one per destination per ${FIPS_COORDS_RESPONSE_INTERVAL_MS}ms.`,
+    },
+    {
+      question: "What does MtuExceeded cause the source to do?",
+      options: [
+        "Re-run the Noise XK handshake.",
+        "Clamp its session-layer path MTU estimate to the reported bottleneck and resend with smaller payloads.",
+        "Delete the destination from its coordinate cache.",
+        "Drop the session and open a new one.",
+      ],
+      correctIndex: 1,
+      explanation:
+        "MtuExceeded is purely about sizing. No discovery, no warmup reset, no key change: FSP lowers path_mtu and fits subsequent packets under it.",
     },
   ],
 };

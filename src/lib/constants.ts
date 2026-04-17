@@ -29,3 +29,25 @@ export const FIPS_IPV6_PORT_HEADER = 4;
 /** Net per-packet overhead for IPv6 traffic through FIPS. */
 export const FIPS_IPV6_OVERHEAD =
   FIPS_BASE_OVERHEAD - FIPS_IPV6_HEADER_SAVINGS + FIPS_IPV6_PORT_HEADER;
+
+/**
+ * Session defaults (see fips-configuration.md and fips-session-layer.md).
+ *
+ * These appear in lesson 8 prose and the recovery state-machine simulator,
+ * so keep them here rather than hard-coding strings like "5" or "2000".
+ */
+
+/** Number of initial data packets per session that carry the CP flag. */
+export const FIPS_COORDS_WARMUP_PACKETS = 5;
+
+/**
+ * Minimum interval between standalone CoordsWarmup responses to a
+ * CoordsRequired or PathBroken signal, per destination.
+ */
+export const FIPS_COORDS_RESPONSE_INTERVAL_MS = 2000;
+
+/** Per-destination rate limit at transit nodes for error signal generation. */
+export const FIPS_ERROR_RATE_LIMIT_MS = 100;
+
+/** Session idle timeout: sessions with no application data for this long are torn down. */
+export const FIPS_SESSION_IDLE_TIMEOUT_S = 90;
